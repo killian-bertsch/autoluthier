@@ -17,6 +17,10 @@ from pydantic import BaseModel
 
 from autosampler.dsp.base import Stage
 from autosampler.dsp.dc import DcRemoveParams, DcRemoveStage
+from autosampler.dsp.eq import EqParams, EqStage
+from autosampler.dsp.limiter import LimiterParams, LimiterStage
+from autosampler.dsp.stereo import StereoParams, StereoStage
+from autosampler.dsp.transient import TransientParams, TransientStage
 from autosampler.dsp.trim import TrimParams, TrimStage
 
 
@@ -31,6 +35,10 @@ class StageRegistration:
 _REGISTRY: dict[str, StageRegistration] = {
     "dc": StageRegistration(DcRemoveParams, DcRemoveStage),
     "trim": StageRegistration(TrimParams, TrimStage),
+    "eq": StageRegistration(EqParams, EqStage),
+    "stereo": StageRegistration(StereoParams, StereoStage),
+    "transient": StageRegistration(TransientParams, TransientStage),
+    "limiter": StageRegistration(LimiterParams, LimiterStage),
 }
 
 
