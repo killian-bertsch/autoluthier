@@ -1,0 +1,27 @@
+# Python bytecode — V1 committed these by mistake; do not repeat it.
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtualenv (independent from V1's)
+.venv/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Workspace data — audio in, instruments out.
+# Note: deliberately NOT ignoring *.wav / *.flac by extension, so small test
+# fixtures under tests/ can be committed. Bulk audio lives in these dirs only.
+input/
+output/
+workspace/
+
+# OS noise
+.DS_Store
+Thumbs.db
