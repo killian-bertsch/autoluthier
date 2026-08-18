@@ -26,7 +26,7 @@ Status: todo | in-progress | done | blocked
 | # | Step | Status | Commit | Notes / gotchas for the next context |
 |---|------|--------|--------|--------------------------------------|
 | 0 | Scaffold, tooling, ledger | done | 9522899 | uv venv (py3.12.3, uv 0.12.3) + editable install verified; ruff/mypy --strict/pytest all green |
-| 1 | Config schema + TOML IO | done | _pending_ | Added `tomli-w` dep (stdlib `tomllib` only reads). `StageConfig.params` is a generic JSON dict for now — concrete per-stage param models arrive with the dsp registry in steps 3-5; the pipeline will validate `params` against those once they exist. `loop_crossfade_ms` > 15% of sample length (bug 7) can't be guarded here since it needs actual sample length — that guard belongs in `dsp/loop.py` (step 5). |
+| 1 | Config schema + TOML IO | done | 9529979 | Added `tomli-w` dep (stdlib `tomllib` only reads). `StageConfig.params` is a generic JSON dict for now — concrete per-stage param models arrive with the dsp registry in steps 3-5; the pipeline will validate `params` against those once they exist. `loop_crossfade_ms` > 15% of sample length (bug 7) can't be guarded here since it needs actual sample length — that guard belongs in `dsp/loop.py` (step 5). |
 | 2 | Domain + slicer + audio IO | todo | — | |
 | 3 | DSP framework + core stages | todo | — | |
 | 4 | New DSP stages (EQ, stereo, transient, limiter) | todo | — | |
