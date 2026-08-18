@@ -25,7 +25,7 @@ Status: todo | in-progress | done | blocked
 
 | # | Step | Status | Commit | Notes / gotchas for the next context |
 |---|------|--------|--------|--------------------------------------|
-| 0 | Scaffold, tooling, ledger | done | PENDING | uv venv (py3.12.3, uv 0.12.3) + editable install verified; ruff/mypy --strict/pytest all green |
+| 0 | Scaffold, tooling, ledger | done | 9522899 | uv venv (py3.12.3, uv 0.12.3) + editable install verified; ruff/mypy --strict/pytest all green |
 | 1 | Config schema + TOML IO | todo | — | |
 | 2 | Domain + slicer + audio IO | todo | — | |
 | 3 | DSP framework + core stages | todo | — | |
