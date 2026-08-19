@@ -33,8 +33,10 @@ from autosampler.config.schema import JSONValue
 EventPayload = dict[str, JSONValue]
 """JSON-serializable form of an event, as sent over SSE in step 9."""
 
-StepKind = Literal["load", "stages", "barrier"]
-"""What a step does: read+slice the source audio, run per-sample stages, or run a set-level one."""
+StepKind = Literal["load", "stages", "barrier", "export"]
+"""What a step does: read+slice the source audio, run per-sample stages, run a set-level one,
+or write the finished instrument to disk (the CLI's ``run`` command, step 8, is the first
+caller to span a reporter across export as well as load/chain)."""
 
 
 @dataclass(frozen=True, slots=True)
