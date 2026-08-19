@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from autosampler.dsp.dc import DcRemoveStage
 from autosampler.dsp.eq import EqStage
 from autosampler.dsp.limiter import LimiterStage
-from autosampler.dsp.registry import build_stage, get_registration
+from autosampler.dsp.registry import all_registrations, build_stage, get_registration
 from autosampler.dsp.stereo import StereoStage
 from autosampler.dsp.transient import TransientStage
 from autosampler.dsp.trim import TrimStage
@@ -38,6 +38,15 @@ class TestGetRegistration:
     def test_unregistered_id_raises_key_error(self) -> None:
         with pytest.raises(KeyError, match="loop"):
             get_registration("loop")
+
+
+class TestAllRegistrations:
+    def test_covers_every_buffer_stage(self) -> None:
+        ids = set(all_registrations())
+        assert ids == {"dc", "trim", "eq", "stereo", "transient", "limiter"}
+
+    def test_returns_same_entries_as_get_registration(self) -> None:
+        assert all_registrations()["trim"] is get_registration("trim")
 
 
 class TestBuildStage:

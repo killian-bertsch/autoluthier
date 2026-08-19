@@ -1,0 +1,116 @@
+/* Design tokens: studio dark / Bitwig-like. One aesthetic, no theme switch —
+   this is a local desktop-style app for one user, not a shared document. */
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../vendor/fonts/jetbrains-mono-var.woff2") format("woff2-variations");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Surfaces, darkest to lightest */
+  --bg-0: #0b0c0e;
+  --bg-1: #131417;
+  --bg-2: #1a1c20;
+  --bg-3: #232529;
+  --bg-hover: #2a2d32;
+
+  /* Hairline borders */
+  --border: #2c2e33;
+  --border-strong: #3a3d43;
+
+  /* Text */
+  --text-primary: #e4e4e2;
+  --text-dim: #9a9a9d;
+  --text-faint: #6b6c70;
+
+  /* Accent: single amber, plus dim/bright variants */
+  --accent: #d99a3c;
+  --accent-bright: #f0b357;
+  --accent-dim: #8a6428;
+  --accent-fg: #1a1408;
+
+  --danger: #c25b4a;
+  --success: #6a9a5c;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+
+  --font-ui: -apple-system, "Segoe UI", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+
+  --row-height: 30px;
+  --sidebar-width: 200px;
+
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono,
+input,
+select,
+button {
+  font-family: var(--font-mono);
+}
+
+button,
+input,
+select {
+  color: inherit;
+}
+
+a {
+  color: var(--accent);
+}
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-3);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--bg-1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+[x-cloak] {
+  display: none !important;
+}

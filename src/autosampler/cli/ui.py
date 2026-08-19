@@ -27,17 +27,16 @@ def ui_command(
 ) -> None:
     """Serve the browser UI and API, opening it in the default browser.
 
-    The frontend (step 10) doesn't exist yet, so until it lands this opens the API's own
-    ``/docs`` page instead of a 404 — everything under ``/api`` and ``/events`` already works.
+    Falls back to the API's own ``/docs`` page instead of a 404 if ``frontend/`` is ever
+    missing (a from-source checkout that skipped it, say) — everything under ``/api`` and
+    ``/events`` works either way.
     """
-    del dev  # accepted now for a stable flag surface; live-reload arrives with the frontend
+    del dev  # accepted now for a stable flag surface; live-reload lands with step 11's dev loop
     url = f"http://{host}:{port}"
     has_frontend = (FRONTEND_DIR / "index.html").is_file()
     console.print(f"[green]Serving autosampler[/] at {url}")
     if not has_frontend:
-        console.print(
-            "[yellow]No frontend build found yet[/] (step 10) — opening the API docs instead."
-        )
+        console.print("[yellow]No frontend build found[/] — opening the API docs instead.")
     if open_browser:
         webbrowser.open(f"{url}/" if has_frontend else f"{url}/docs")
     uvicorn.run(create_app(), host=host, port=port)

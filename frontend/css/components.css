@@ -1,0 +1,394 @@
+/* Widgets: param rows, numeric field, toggle, select, stage chain, buttons. */
+
+.group-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin: 20px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.group-header:first-child {
+  margin-top: 0;
+}
+
+/* Ableton/Bitwig-style compact parameter row: dimmed label ····· mono value unit */
+.param-row {
+  display: flex;
+  align-items: center;
+  min-height: var(--row-height);
+  gap: 10px;
+  border-bottom: 1px solid transparent;
+}
+
+.param-row:hover {
+  background: var(--bg-1);
+}
+
+.param-row .param-label {
+  flex: 0 0 auto;
+  width: 190px;
+  color: var(--text-dim);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.param-row .param-control {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.param-row .param-auto-toggle {
+  font-size: 10px;
+  color: var(--text-faint);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  padding: 2px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.param-row .param-auto-toggle.is-auto {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+/* Text / select inputs, kept visually flat against the row */
+.field-select,
+.field-text {
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 4px 8px;
+  min-width: 0;
+  outline: none;
+}
+
+.field-select {
+  flex: 1;
+  max-width: 220px;
+}
+
+.field-text {
+  flex: 1;
+}
+
+.field-select:focus,
+.field-text:focus {
+  border-color: var(--accent-dim);
+}
+
+/* Toggle switch, for booleans */
+.switch {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 0.12s var(--ease);
+}
+
+.switch .knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform 0.12s var(--ease), background 0.12s var(--ease);
+}
+
+.switch.on {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+.switch.on .knob {
+  transform: translateX(14px);
+  background: var(--accent-bright);
+}
+
+/* Draggable numeric field */
+numeric-field {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+numeric-field .nf-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 112px;
+  height: 22px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: ew-resize;
+  user-select: none;
+}
+
+numeric-field .nf-body.editing {
+  cursor: text;
+}
+
+numeric-field .nf-body.dragging {
+  border-color: var(--accent);
+}
+
+numeric-field .nf-ghost {
+  position: absolute;
+  inset: 0;
+  background: var(--accent-dim);
+  opacity: 0.35;
+  width: 0%;
+  pointer-events: none;
+}
+
+numeric-field .nf-value {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+  z-index: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+numeric-field .nf-input {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 0 8px;
+  text-align: right;
+}
+
+numeric-field .nf-unit {
+  color: var(--text-faint);
+  font-size: 11px;
+  width: 28px;
+  text-align: left;
+  flex: 0 0 auto;
+}
+
+/* Buttons */
+.btn {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-2);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--bg-hover);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--accent-bright);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-2);
+  color: var(--text-primary);
+}
+
+/* Save status pill in the header */
+.save-status {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.save-status.dirty {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.save-status.saving {
+  color: var(--text-dim);
+}
+
+.save-status.error {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Workspace / open-project list */
+.workspace-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.workspace-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  cursor: pointer;
+}
+
+.workspace-row:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-2);
+}
+
+.workspace-row .name {
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.workspace-row .path {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.open-form {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.open-form .field-text {
+  font-family: var(--font-mono);
+}
+
+/* Stage chain editor */
+.stage-chain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stage-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+}
+
+.stage-row.dragging {
+  opacity: 0.4;
+}
+
+.stage-row.drag-over {
+  border-color: var(--accent-dim);
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  min-height: var(--row-height);
+}
+
+.stage-header .drag-handle {
+  color: var(--text-faint);
+  cursor: grab;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px;
+  flex: 0 0 auto;
+}
+
+.stage-header .stage-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.stage-row:not(.expanded) .stage-header .stage-name {
+  color: var(--text-dim);
+}
+
+.stage-header .expand-chevron {
+  color: var(--text-faint);
+  font-size: 10px;
+  cursor: pointer;
+  width: 14px;
+  text-align: center;
+}
+
+.stage-params {
+  padding: 4px 10px 10px 32px;
+  border-top: 1px solid var(--border);
+}
+
+.stage-params .param-row {
+  min-height: 26px;
+}
+
+.stage-params-empty {
+  padding: 4px 10px 10px 32px;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-style: italic;
+}

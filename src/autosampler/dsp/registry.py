@@ -45,6 +45,18 @@ _REGISTRY: dict[str, StageRegistration] = {
 }
 
 
+def all_registrations() -> Mapping[str, StageRegistration]:
+    """Return every registered stage id mapped to its `StageRegistration`.
+
+    Used by ``server/routes/schema.py`` to build the stage-chain editor's per-stage params
+    schemas without reaching into the module-private registry dict.
+
+    Returns:
+        A read-only view of the registry.
+    """
+    return _REGISTRY
+
+
 def get_registration(stage_id: str) -> StageRegistration:
     """Look up the params model + factory registered for `stage_id`.
 

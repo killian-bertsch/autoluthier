@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from autosampler.cli import ui as ui_module
@@ -48,6 +50,19 @@ def test_ui_no_open_skips_the_browser(_no_real_server: list[tuple[str, int]]) ->
     assert not any(call[0] == "open" for call in _no_real_server)
 
 
-def test_ui_reports_missing_frontend(_no_real_server: list[tuple[str, int]]) -> None:
+def test_ui_opens_the_real_frontend(_no_real_server: list[tuple[str, int]]) -> None:
+    """Step 10 landed a real `frontend/index.html`, so the normal run opens `/`, not `/docs`."""
     result = runner.invoke(app, ["ui"])
-    assert "No frontend build found yet" in result.output
+    assert result.exit_code == 0, result.output
+    assert "No frontend build found" not in result.output
+    assert ("open", "http://127.0.0.1:8000/") in _no_real_server
+
+
+def test_ui_reports_missing_frontend(
+    _no_real_server: list[tuple[str, int]], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """If `frontend/` is ever absent (e.g. a stripped-down checkout), fall back to `/docs`."""
+    monkeypatch.setattr(ui_module, "FRONTEND_DIR", tmp_path)
+    result = runner.invoke(app, ["ui"])
+    assert "No frontend build found" in result.output
+    assert ("open", "http://127.0.0.1:8000/docs") in _no_real_server

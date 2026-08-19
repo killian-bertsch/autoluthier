@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>autosampler</title>
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+  </head>
+  <body>
+    <div id="app" x-data="app()" x-cloak>
+      <header class="app-header">
+        <span class="brand">autosampler<span class="v">v2</span></span>
+        <span class="project-path" x-text="project ? project.folder : ''"></span>
+        <template x-if="project">
+          <span
+            class="save-status"
+            :class="{ dirty: saveState === 'dirty', saving: saveState === 'saving', error: saveState === 'error' }"
+            x-text="saveStatusLabel()"
+          ></span>
+        </template>
+        <button class="btn btn-primary" x-show="project" @click="save()" :disabled="saveState === 'saving'">
+          Save
+        </button>
+      </header>
+
+      <nav class="app-nav">
+        <div class="nav-group-label">Project</div>
+        <div class="nav-item" :class="{ active: section === 'workspace' }" @click="selectSection('workspace')">
+          Workspace
+        </div>
+
+        <template x-if="project">
+          <div>
+            <div class="nav-group-label">Configuration</div>
+            <div class="nav-item" :class="{ active: section === 'general' }" @click="selectSection('general')">
+              General
+            </div>
+            <div class="nav-item" :class="{ active: section === 'recording' }" @click="selectSection('recording')">
+              Recording
+            </div>
+            <div class="nav-item" :class="{ active: section === 'selection' }" @click="selectSection('selection')">
+              Selection
+            </div>
+            <div class="nav-item" :class="{ active: section === 'output' }" @click="selectSection('output')">
+              Output
+            </div>
+            <div class="nav-item" :class="{ active: section === 'crossfade' }" @click="selectSection('crossfade')">
+              Crossfade
+            </div>
+            <div class="nav-item" :class="{ active: section === 'stages' }" @click="selectSection('stages')">
+              Stage Chain
+            </div>
+
+            <div class="nav-group-label">Views</div>
+            <div class="nav-item disabled">Waveform &amp; Loop <span class="nav-badge">step 11</span></div>
+            <div class="nav-item disabled">Sample Matrix <span class="nav-badge">step 11</span></div>
+            <div class="nav-item disabled">Analysis <span class="nav-badge">step 11</span></div>
+            <div class="nav-item disabled">SFZ &amp; Log <span class="nav-badge">step 11</span></div>
+          </div>
+        </template>
+      </nav>
+
+      <main class="app-main">
+        <template x-if="section === 'workspace'">
+          <div>
+            <template x-if="!project">
+              <div class="empty-state">
+                <h2>Open an instrument</h2>
+                <p>Enter the path to an instrument folder containing <code class="mono">project.toml</code>.</p>
+                <form class="open-form" @submit.prevent="openFolder(openFolderInput)">
+                  <input
+                    class="field-text"
+                    type="text"
+                    placeholder="/path/to/instrument"
+                    x-model="openFolderInput"
+                  />
+                  <button class="btn btn-primary" type="submit">Open</button>
+                </form>
+                <p x-show="errorMessage" style="color: var(--danger)" x-text="errorMessage"></p>
+              </div>
+            </template>
+
+            <div class="panel" x-show="workspace.length">
+              <div class="group-header">Recent projects</div>
+              <div class="workspace-list">
+                <template x-for="entry in workspace" :key="entry.path">
+                  <div class="workspace-row" @click="openFolder(entry.path)">
+                    <span class="name" x-text="entry.name"></span>
+                    <span class="path" x-text="entry.path"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="section !== 'workspace' && project">
+          <div class="panel" x-ref="sectionBody"></div>
+        </template>
+      </main>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+    <script src="vendor/alpine.min.js" defer></script>
+  </body>
+</html>
