@@ -345,6 +345,22 @@ class OutputConfig(BaseModel):
             help_text="Sampler release time written into the SFZ.",
         ),
     )
+    velocity_dynamic_range_db: float = Field(
+        default=40.0,
+        ge=0.0,
+        le=127.0,
+        json_schema_extra=ui_hint(
+            group="Output",
+            order=5,
+            unit="dB",
+            step=1.0,
+            help_text=(
+                "Fallback amp_velcurve_1 range: how much quieter velocity 1 plays than "
+                "velocity 127. Used only when normalize is not in velocity mode, which "
+                "measures the range from the audio instead."
+            ),
+        ),
+    )
 
 
 class StageConfig(BaseModel):

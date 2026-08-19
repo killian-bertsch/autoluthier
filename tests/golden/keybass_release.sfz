@@ -1,0 +1,220 @@
+<control>
+default_path=samples/release/
+
+<group>
+trigger=release
+ampeg_attack=0.045
+ampeg_sustain=0
+ampeg_decay=1.000
+ampeg_release=0.300
+amp_velcurve_1=0.010000
+
+<region>
+sample=keybass_C3_v1_rel.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=1  hivel=31
+rt_decay=8.50
+
+<region>
+sample=keybass_C3_v51_rel.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=20  hivel=71
+rt_decay=8.50
+
+<region>
+sample=keybass_C3_v77_rel.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=60  hivel=94
+rt_decay=8.50
+
+<region>
+sample=keybass_C3_v102_rel.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=85  hivel=119
+rt_decay=8.50
+
+<region>
+sample=keybass_C3_v127_rel.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=113  hivel=127
+rt_decay=8.50
+
+<region>
+sample=keybass_D3_v1_rel.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=1  hivel=31
+rt_decay=8.84
+
+<region>
+sample=keybass_D3_v51_rel.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=20  hivel=71
+rt_decay=8.84
+
+<region>
+sample=keybass_D3_v77_rel.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=60  hivel=94
+rt_decay=8.84
+
+<region>
+sample=keybass_D3_v102_rel.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=85  hivel=119
+rt_decay=8.84
+
+<region>
+sample=keybass_D3_v127_rel.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=113  hivel=127
+rt_decay=8.84
+
+<region>
+sample=keybass_E3_v1_rel.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=1  hivel=31
+rt_decay=8.50
+
+<region>
+sample=keybass_E3_v51_rel.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=20  hivel=71
+rt_decay=8.50
+
+<region>
+sample=keybass_E3_v77_rel.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=60  hivel=94
+rt_decay=8.50
+
+<region>
+sample=keybass_E3_v102_rel.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=85  hivel=119
+rt_decay=8.50
+
+<region>
+sample=keybass_E3_v127_rel.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=113  hivel=127
+rt_decay=8.50
+
+<region>
+sample=keybass_F#3_v1_rel.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=1  hivel=31
+rt_decay=8.57
+
+<region>
+sample=keybass_F#3_v51_rel.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=20  hivel=71
+rt_decay=8.57
+
+<region>
+sample=keybass_F#3_v77_rel.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=60  hivel=94
+rt_decay=8.57
+
+<region>
+sample=keybass_F#3_v102_rel.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=85  hivel=119
+rt_decay=8.57
+
+<region>
+sample=keybass_F#3_v127_rel.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=113  hivel=127
+rt_decay=8.57
+
+<region>
+sample=keybass_G#3_v1_rel.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=1  hivel=31
+rt_decay=8.61
+
+<region>
+sample=keybass_G#3_v51_rel.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=20  hivel=71
+rt_decay=8.61
+
+<region>
+sample=keybass_G#3_v77_rel.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=60  hivel=94
+rt_decay=8.61
+
+<region>
+sample=keybass_G#3_v102_rel.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=85  hivel=119
+rt_decay=8.61
+
+<region>
+sample=keybass_G#3_v127_rel.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=113  hivel=127
+rt_decay=8.61
+
+<region>
+sample=keybass_A#3_v1_rel.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=1  hivel=31
+rt_decay=8.60
+
+<region>
+sample=keybass_A#3_v51_rel.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=20  hivel=71
+rt_decay=8.60
+
+<region>
+sample=keybass_A#3_v77_rel.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=60  hivel=94
+rt_decay=8.60
+
+<region>
+sample=keybass_A#3_v102_rel.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=85  hivel=119
+rt_decay=8.60
+
+<region>
+sample=keybass_A#3_v127_rel.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=113  hivel=127
+rt_decay=8.60
+
+<region>
+sample=keybass_C4_v1_rel.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=1  hivel=31
+rt_decay=8.76
+
+<region>
+sample=keybass_C4_v51_rel.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=20  hivel=71
+rt_decay=8.76
+
+<region>
+sample=keybass_C4_v77_rel.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=60  hivel=94
+rt_decay=8.76
+
+<region>
+sample=keybass_C4_v102_rel.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=85  hivel=119
+rt_decay=8.76
+
+<region>
+sample=keybass_C4_v127_rel.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=113  hivel=127
+rt_decay=8.76

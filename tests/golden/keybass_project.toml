@@ -1,0 +1,26 @@
+[recording]
+velocity_layers = 6
+semitone_interval = 2
+hold_time = 1.0
+release_time = 0.5
+start_note = 48
+end_note = 60
+
+[selection]
+min_note = 48
+max_note = 60
+note_percentage = 100.0
+velocity_layers_out = 6
+velocity_map = "0-63:2, 64-127:3"
+
+[crossfade]
+crossfade_percent = 20.0
+loop_crossfade_ms = 20.0
+loop_crossfade_mode = "sfz"
+
+[output]
+container = "flac"
+sample_format = "pcm24"
+collapse_to_mono = false
+ampeg_release = 0.045
+velocity_dynamic_range_db = 40.0

@@ -1,0 +1,377 @@
+<control>
+default_path=samples/
+
+<group>
+ampeg_release=0.045
+amp_velcurve_1=0.010000
+
+<region>
+sample=keybass_C3_v1.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=19548
+loop_end=20727
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C3_v51.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=19548
+loop_end=20727
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C3_v77.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=19548
+loop_end=20727
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C3_v102.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=19548
+loop_end=20727
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C3_v127.flac
+lokey=48  hikey=49  pitch_keycenter=48
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=19548
+loop_end=20727
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_D3_v1.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=20118
+loop_end=21319
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_D3_v51.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=20118
+loop_end=21319
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_D3_v77.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=20118
+loop_end=21319
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_D3_v102.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=20118
+loop_end=21319
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_D3_v127.flac
+lokey=50  hikey=51  pitch_keycenter=50
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=20118
+loop_end=21319
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_E3_v1.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=18993
+loop_end=20198
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_E3_v51.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=18993
+loop_end=20198
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_E3_v77.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=18993
+loop_end=20198
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_E3_v102.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=18993
+loop_end=20198
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_E3_v127.flac
+lokey=52  hikey=53  pitch_keycenter=52
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=18993
+loop_end=20198
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_F#3_v1.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=19424
+loop_end=20616
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_F#3_v51.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=19424
+loop_end=20616
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_F#3_v77.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=19424
+loop_end=20616
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_F#3_v102.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=19424
+loop_end=20616
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_F#3_v127.flac
+lokey=54  hikey=55  pitch_keycenter=54
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=19424
+loop_end=20616
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_G#3_v1.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=19641
+loop_end=20809
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_G#3_v51.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=19641
+loop_end=20809
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_G#3_v77.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=19641
+loop_end=20809
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_G#3_v102.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=19641
+loop_end=20809
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_G#3_v127.flac
+lokey=56  hikey=57  pitch_keycenter=56
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=19641
+loop_end=20809
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_A#3_v1.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=19580
+loop_end=20715
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_A#3_v51.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=19580
+loop_end=20715
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_A#3_v77.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=19580
+loop_end=20715
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_A#3_v102.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=19580
+loop_end=20715
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_A#3_v127.flac
+lokey=58  hikey=59  pitch_keycenter=58
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=19580
+loop_end=20715
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C4_v1.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=1  hivel=31
+xfout_lovel=26  xfout_hivel=31
+loop_mode=loop_continuous
+loop_start=19466
+loop_end=20646
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C4_v51.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=20  hivel=71
+xfin_lovel=20  xfin_hivel=27
+xfout_lovel=64  xfout_hivel=71
+loop_mode=loop_continuous
+loop_start=19466
+loop_end=20646
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C4_v77.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=60  hivel=94
+xfin_lovel=60  xfin_hivel=65
+xfout_lovel=89  xfout_hivel=94
+loop_mode=loop_continuous
+loop_start=19466
+loop_end=20646
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C4_v102.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=85  hivel=119
+xfin_lovel=85  xfin_hivel=90
+xfout_lovel=114  xfout_hivel=119
+loop_mode=loop_continuous
+loop_start=19466
+loop_end=20646
+loop_crossfade=0.0200
+
+<region>
+sample=keybass_C4_v127.flac
+lokey=60  hikey=60  pitch_keycenter=60
+lovel=113  hivel=127
+xfin_lovel=113  xfin_hivel=115
+loop_mode=loop_continuous
+loop_start=19466
+loop_end=20646
+loop_crossfade=0.0200
