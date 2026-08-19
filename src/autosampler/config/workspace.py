@@ -59,6 +59,19 @@ class WorkspaceIndex(BaseModel):
         self.entries = [entry for entry in self.entries if entry.path != resolved]
 
 
+def default_workspace_path() -> Path:
+    """Return the default location for the app-level workspace index file.
+
+    ``~/.autosampler/workspace.toml`` — outside any project folder, since the index tracks
+    projects across the whole machine, not just one instrument. The server (step 9) uses this
+    unless a caller (tests, in particular) supplies its own path.
+
+    Returns:
+        The default workspace index path.
+    """
+    return Path.home() / ".autosampler" / "workspace.toml"
+
+
 def discover_projects(root: str | Path) -> list[Path]:
     """Find every immediate subdirectory of `root` that contains a project.toml.
 

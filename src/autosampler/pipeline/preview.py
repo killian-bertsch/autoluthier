@@ -98,8 +98,18 @@ def select_preview(
     return PreviewSelection(notes=tuple(notes), velocities=tuple(velocities))
 
 
-def _copy_all(audio: InstrumentAudio) -> InstrumentAudio:
-    """Deep-copy a whole instrument, so processing it can't touch the caller's samples."""
+def copy_instrument_audio(audio: InstrumentAudio) -> InstrumentAudio:
+    """Deep-copy a whole instrument, so processing the copy can't touch the caller's samples.
+
+    Public because the server (step 9) needs the same guarantee for its own full-set preview
+    (``/api/sfz/preview``), not just this module's subset preview.
+
+    Args:
+        audio: The instrument to copy.
+
+    Returns:
+        An independent copy sharing no mutable state with `audio`.
+    """
     return InstrumentAudio(
         sustain=SampleSet([sample.copy() for sample in audio.sustain]),
         release=SampleSet([sample.copy() for sample in audio.release]),
@@ -169,7 +179,7 @@ def run_preview(
 
     total_steps = len(partition_chain(head)) + len(partition_chain(tail))
     reporter = ProgressReporter(sink, total_steps=total_steps)
-    full = _copy_all(audio)
+    full = copy_instrument_audio(audio)
     head_result = run_chain(full, head, workers=workers, reporter=reporter)
     subset = _restrict(full, selection)
     run_chain(subset, tail, workers=workers, reporter=reporter)

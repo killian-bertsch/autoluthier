@@ -1,17 +1,15 @@
-"""``autosampler ui`` — serve the browser frontend.
-
-Not implemented yet: the FastAPI server and static frontend arrive in steps 9-10. The command
-is registered now so the CLI's command surface matches the plan and ``autosampler --help``
-already documents where this is going; running it explains that and exits cleanly rather than
-failing with an import error for a server module that doesn't exist yet.
-"""
+"""``autosampler ui`` — serve the browser frontend and API."""
 
 from __future__ import annotations
 
+import webbrowser
 from typing import Annotated
 
 import typer
+import uvicorn
 from rich.console import Console
+
+from autosampler.server.app import FRONTEND_DIR, create_app
 
 console = Console()
 
@@ -23,12 +21,23 @@ def ui_command(
     dev: Annotated[
         bool, typer.Option("--dev", help="Enable asset live-reload for frontend development.")
     ] = False,
+    open_browser: Annotated[
+        bool, typer.Option("--open/--no-open", help="Open the URL in the default browser.")
+    ] = True,
 ) -> None:
-    """Serve the browser UI and open it — not available until step 9 (Server) lands."""
-    del host, port, dev  # accepted now so the flag surface is stable once the server lands
-    console.print(
-        "[yellow]autosampler ui[/] is not available yet — the FastAPI server (step 9) and "
-        "frontend (step 10) haven't landed. Use 'run', 'preview', 'validate', 'midi', "
-        "'prenorm', or 'concat' in the meantime."
-    )
-    raise typer.Exit(code=1)
+    """Serve the browser UI and API, opening it in the default browser.
+
+    The frontend (step 10) doesn't exist yet, so until it lands this opens the API's own
+    ``/docs`` page instead of a 404 — everything under ``/api`` and ``/events`` already works.
+    """
+    del dev  # accepted now for a stable flag surface; live-reload arrives with the frontend
+    url = f"http://{host}:{port}"
+    has_frontend = (FRONTEND_DIR / "index.html").is_file()
+    console.print(f"[green]Serving autosampler[/] at {url}")
+    if not has_frontend:
+        console.print(
+            "[yellow]No frontend build found yet[/] (step 10) — opening the API docs instead."
+        )
+    if open_browser:
+        webbrowser.open(f"{url}/" if has_frontend else f"{url}/docs")
+    uvicorn.run(create_app(), host=host, port=port)

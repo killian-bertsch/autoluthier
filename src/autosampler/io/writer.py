@@ -7,6 +7,7 @@ libsndfile fail with an opaque error deep inside a batch render.
 
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
@@ -68,13 +69,38 @@ def resample(
     return np.asarray(resampled, dtype=np.float32)
 
 
+def encode_audio(
+    audio: NDArray[np.float32], sample_rate: int, output: OutputConfig
+) -> bytes:
+    """Encode ``audio`` in memory per ``output``'s container/bit-depth/resample settings.
+
+    Clips to ``[-1, 1]`` before encoding, matching V1's contract for the integer PCM formats
+    this pipeline writes. Used by `write_audio` and by the server (step 9), which serves a
+    sample's audio over HTTP without ever putting it on disk.
+
+    Args:
+        audio: Audio to encode, shape ``(n_frames,)`` or ``(n_frames, n_channels)``.
+        sample_rate: Sample rate of ``audio`` in Hz.
+        output: Output container/bit-depth/resample configuration.
+
+    Returns:
+        The encoded file's bytes.
+    """
+    subtype = resolve_subtype(output.container, output.sample_format)
+    if output.sample_rate is not None and output.sample_rate != sample_rate:
+        audio = resample(audio, sample_rate, output.sample_rate)
+        sample_rate = output.sample_rate
+
+    data = np.clip(audio, -1.0, 1.0)
+    buffer = BytesIO()
+    sf.write(buffer, data, sample_rate, format=output.container.upper(), subtype=subtype)
+    return buffer.getvalue()
+
+
 def write_audio(
     path: Path, audio: NDArray[np.float32], sample_rate: int, output: OutputConfig
 ) -> Path:
     """Encode ``audio`` to ``path`` per ``output``'s container/bit-depth/resample settings.
-
-    Clips to ``[-1, 1]`` before encoding, matching V1's contract for the integer PCM formats
-    this pipeline writes to disk.
 
     Args:
         path: Destination file path; parent directories are created as needed.
@@ -85,12 +111,7 @@ def write_audio(
     Returns:
         The path written to.
     """
-    subtype = resolve_subtype(output.container, output.sample_format)
-    if output.sample_rate is not None and output.sample_rate != sample_rate:
-        audio = resample(audio, sample_rate, output.sample_rate)
-        sample_rate = output.sample_rate
-
-    data = np.clip(audio, -1.0, 1.0)
+    data = encode_audio(audio, sample_rate, output)
     path.parent.mkdir(parents=True, exist_ok=True)
-    sf.write(str(path), data, sample_rate, format=output.container.upper(), subtype=subtype)
+    path.write_bytes(data)
     return path
