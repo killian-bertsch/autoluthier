@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from autosampler.config.schema import CrossfadeConfig
 from autosampler.domain.models import Sample, SampleSet
+from autosampler.domain.units import ms_to_frames
 from autosampler.dsp.loop import (
     LoopParams,
     LoopPoints,
@@ -166,18 +167,35 @@ class TestFindLoopPoints:
 class TestCrossfadeFrames:
     def test_exact_when_it_fits(self) -> None:
         points = LoopPoints(start=30_000, end=40_000)
-        assert crossfade_frames(points, 20.0, SR) == 882
+        assert crossfade_frames(points, 20.0, SR, headroom_frames=points.start) == 882
 
     def test_zero_ms_gives_zero_frames(self) -> None:
-        assert crossfade_frames(LoopPoints(start=30_000, end=40_000), 0.0, SR) == 0
+        points = LoopPoints(start=30_000, end=40_000)
+        assert crossfade_frames(points, 0.0, SR, headroom_frames=points.start) == 0
 
     def test_clamped_to_loop_length(self) -> None:
         points = LoopPoints(start=30_000, end=32_205)
-        assert crossfade_frames(points, 500.0, SR) == 2_205
+        assert crossfade_frames(points, 500.0, SR, headroom_frames=points.start) == 2_205
 
-    def test_clamped_to_material_before_loop_start(self) -> None:
+    def test_clamped_to_headroom_before_loop_start(self) -> None:
+        """Baked mode's headroom: the material it fades with sits before loop_start."""
         points = LoopPoints(start=100, end=50_000)
-        assert crossfade_frames(points, 500.0, SR) == 100
+        assert crossfade_frames(points, 500.0, SR, headroom_frames=points.start) == 100
+
+    def test_clamped_to_headroom_after_loop_end(self) -> None:
+        """SFZ mode's headroom: the sampler fades with the tail after loop_end."""
+        points = LoopPoints(start=30_000, end=40_000)
+        n_frames = 40_200
+        assert (
+            crossfade_frames(
+                points, 500.0, SR, headroom_frames=n_frames - points.end
+            )
+            == 200
+        )
+
+    def test_negative_headroom_gives_zero_not_a_negative_length(self) -> None:
+        points = LoopPoints(start=0, end=10_000)
+        assert crossfade_frames(points, 20.0, SR, headroom_frames=-5) == 0
 
 
 class TestFadeCurves:
@@ -216,7 +234,7 @@ class TestCorrelatedMaterialLevel:
         audio = _sine(100.0, SR)
         points = find_loop_points(audio, SR, LoopParams())
         assert points is not None
-        frames = crossfade_frames(points, 20.0, SR)
+        frames = crossfade_frames(points, 20.0, SR, headroom_frames=points.start)
         tail = audio[points.end - frames : points.end].astype(np.float64)
         pre = audio[points.start - frames : points.start].astype(np.float64)
         return tail, pre, frames
@@ -448,3 +466,126 @@ class TestApplyLoop:
         assert sample.loop_end is not None
         loop = sample.audio[sample.loop_start : sample.loop_end]
         assert float(np.max(np.abs(loop))) == pytest.approx(0.5, abs=0.005)
+
+
+class TestSfzCrossfadeMode:
+    """`sfz` mode hands the fade to the sampler: audio untouched, a length for the opcode."""
+
+    def _sample(self) -> Sample:
+        return Sample(note=60, velocity=100, audio=_sine(100.0, SR), sample_rate=SR)
+
+    def test_default_mode_is_baked(self) -> None:
+        assert CrossfadeConfig().loop_crossfade_mode == "baked"
+
+    def test_audio_is_left_bit_identical(self) -> None:
+        sample = self._sample()
+        original = sample.audio.copy()
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=20.0, crossfade_mode="sfz"
+        )
+        np.testing.assert_array_equal(sample.audio, original)
+
+    def test_loop_points_still_detected(self) -> None:
+        sample = self._sample()
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=20.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_start is not None
+        assert sample.loop_end is not None
+
+    def test_records_the_requested_length_when_the_tail_allows_it(self) -> None:
+        sample = self._sample()
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=20.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_crossfade_frames == 882  # 20 ms at 44.1 kHz, honored exactly
+
+    def test_clamped_to_the_loop_length(self) -> None:
+        """A fade longer than the loop makes no sense in either mode."""
+        sample = self._sample()
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=5_000.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_start is not None
+        assert sample.loop_end is not None
+        assert sample.loop_crossfade_frames == sample.loop_end - sample.loop_start
+
+    def test_clamped_to_the_tail_never_claiming_more_than_exists(self) -> None:
+        """The opcode must never promise a longer fade than the audio behind loop_end.
+
+        A long loop reaching close to the end of the sample makes the tail the tighter bound
+        rather than the loop length — the situation V1 tried to prevent by shrinking the search
+        window, and the one where a naively-emitted opcode would over-claim.
+        """
+        sample = self._sample()
+        params = LoopParams(region_start_frac=0.5, region_end_frac=1.0, min_loop_ms=400.0)
+        apply_loop(
+            SampleSet([sample]), params, crossfade_ms=5_000.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_start is not None
+        assert sample.loop_end is not None
+        tail = sample.n_frames - sample.loop_end
+        assert tail < sample.loop_end - sample.loop_start  # tail is the tighter bound
+        assert sample.loop_crossfade_frames == tail
+        assert sample.loop_crossfade_frames > 0
+
+    def test_over_long_request_still_yields_a_valid_loop(self) -> None:
+        """Bug 7 must not return through the sfz path: clamp the fade, keep the loop."""
+        sample = self._sample()
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=5_000.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_start is not None
+        assert sample.loop_end is not None
+        assert sample.loop_end - sample.loop_start >= 0.050 * SR
+
+    def test_detection_identical_to_baked_mode(self) -> None:
+        """Mode changes what happens to the fade, never where the loop is."""
+        baked, delegated = self._sample(), self._sample()
+        apply_loop(SampleSet([baked]), LoopParams(), crossfade_ms=20.0)
+        apply_loop(
+            SampleSet([delegated]), LoopParams(), crossfade_ms=20.0, crossfade_mode="sfz"
+        )
+        assert (baked.loop_start, baked.loop_end) == (
+            delegated.loop_start,
+            delegated.loop_end,
+        )
+
+    def test_default_region_end_honors_a_three_percent_crossfade(self) -> None:
+        """Documents the headroom the 0.97 default guarantees: 3% of the sample, exactly."""
+        n = 10 * SR
+        sample = Sample(note=60, velocity=100, audio=_sine(100.0, n), sample_rate=SR)
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=300.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_crossfade_frames == ms_to_frames(300.0, SR)
+
+    def test_baked_mode_records_the_frames_it_baked(self) -> None:
+        sample = self._sample()
+        apply_loop(SampleSet([sample]), LoopParams(), crossfade_ms=20.0)
+        assert sample.loop_crossfade_frames == 882
+
+    def test_undetectable_sample_records_no_crossfade(self) -> None:
+        sample = Sample(
+            note=60, velocity=100, audio=np.zeros(SR, dtype=np.float32), sample_rate=SR
+        )
+        apply_loop(
+            SampleSet([sample]), LoopParams(), crossfade_ms=20.0, crossfade_mode="sfz"
+        )
+        assert sample.loop_crossfade_frames == 0
+
+    def test_shape_is_irrelevant_in_sfz_mode(self) -> None:
+        """The curve is the sampler's choice there, so it must not change our output."""
+        results = []
+        for shape in ("linear", "equal_power"):
+            sample = self._sample()
+            apply_loop(
+                SampleSet([sample]),
+                LoopParams(),
+                crossfade_ms=20.0,
+                crossfade_mode="sfz",
+                crossfade_shape=shape,  # type: ignore[arg-type]
+            )
+            results.append((sample.audio.copy(), sample.loop_crossfade_frames))
+        np.testing.assert_array_equal(results[0][0], results[1][0])
+        assert results[0][1] == results[1][1]

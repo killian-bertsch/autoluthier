@@ -20,6 +20,13 @@ class Sample:
 
     ``audio`` is float32, shape ``(n_frames,)`` for mono or ``(n_frames, n_channels)`` for
     multichannel — every stage from the DSP framework onward must handle both shapes.
+
+    ``loop_crossfade_frames`` is the crossfade length `dsp.loop` settled on for this specific
+    sample after clamping to the audio it actually had available. In ``baked`` mode that fade is
+    already in ``audio`` and the value is informational (reports, UI); in ``sfz`` mode the audio
+    is untouched and this is the length export writes into the ``loop_crossfade`` opcode. It is
+    per-sample rather than one project-wide number because the clamp depends on each sample's
+    own length and detected loop.
     """
 
     note: int
@@ -28,6 +35,7 @@ class Sample:
     sample_rate: int
     loop_start: int | None = None
     loop_end: int | None = None
+    loop_crossfade_frames: int = 0
 
     @property
     def n_frames(self) -> int:

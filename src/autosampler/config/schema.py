@@ -23,6 +23,7 @@ type JSONValue = str | int | float | bool | list[JSONValue] | dict[str, JSONValu
 
 SampleFormat = Literal["pcm16", "pcm24", "pcm32", "float32"]
 ContainerFormat = Literal["flac", "wav"]
+LoopCrossfadeMode = Literal["baked", "sfz"]
 LoopCrossfadeShape = Literal["linear", "equal_power"]
 
 _MIN_MIDI_VELOCITY = 0
@@ -242,8 +243,8 @@ class SelectionConfig(BaseModel):
 class CrossfadeConfig(BaseModel):
     """Overlap behavior between adjacent velocity zones and baked sample loops.
 
-    Everything about the *loop* crossfade lives here (length and curve); everything about loop
-    *detection* lives in ``dsp.loop.LoopParams``. That split is why `LoopParams` has no
+    Everything about the *loop* crossfade lives here (length, mode, and curve); everything about
+    loop *detection* lives in ``dsp.loop.LoopParams``. That split is why `LoopParams` has no
     crossfade fields of its own — each field is defined exactly once.
     """
 
@@ -271,15 +272,29 @@ class CrossfadeConfig(BaseModel):
             help_text="Baked crossfade length at each detected loop point.",
         ),
     )
-    loop_crossfade_shape: LoopCrossfadeShape = Field(
-        default="linear",
+    loop_crossfade_mode: LoopCrossfadeMode = Field(
+        default="baked",
         json_schema_extra=ui_hint(
             group="Crossfade",
             order=2,
             help_text=(
-                "Loop crossfade curve. linear holds a steady level on the phase-matched, "
-                "highly correlated material the loop finder selects; equal_power preserves "
-                "power on decorrelated (noisy) sustains but lifts correlated material ~3 dB."
+                "baked renders the fade into the sample itself, so it sounds identical in "
+                "every sampler. sfz leaves the audio untouched and emits a loop_crossfade "
+                "opcode instead, letting the sampler fade at playback time (V1's behavior) — "
+                "only works in samplers that implement the opcode."
+            ),
+        ),
+    )
+    loop_crossfade_shape: LoopCrossfadeShape = Field(
+        default="linear",
+        json_schema_extra=ui_hint(
+            group="Crossfade",
+            order=3,
+            help_text=(
+                "Loop crossfade curve; baked mode only, since in sfz mode the curve is the "
+                "sampler's choice. linear holds a steady level on the phase-matched, highly "
+                "correlated material the loop finder selects; equal_power preserves power on "
+                "decorrelated (noisy) sustains but lifts correlated material ~3 dB."
             ),
         ),
     )

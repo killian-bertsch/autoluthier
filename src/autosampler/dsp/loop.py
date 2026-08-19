@@ -1,11 +1,12 @@
-"""Loop-point detection and a baked equal-power crossfade for sustain samples.
+"""Loop-point detection and the loop crossfade for sustain samples.
 
 Ports V1's ``LoopFinderProcessor`` (``src/processors/loop_finder.py``): the search window,
 the candidate cap, and the ``0.65 * amp_similarity + 0.35 * max(correlation, 0)`` score are
 reproduced exactly, with the per-sample Python zero-crossing scan replaced by a vectorized
 ``np.flatnonzero`` pass and the local-RMS pass replaced by a cumulative-sum-of-squares lookup.
 
-Two things are genuinely new here.
+Two things are genuinely new here: the crossfade is V2's job rather than the sampler's (by
+default), and bug 7 is gone.
 
 **Bug 7 is fixed by removing the coupling that caused it.** V1 shrank the search window by the
 crossfade length — ``tail_frac = max(crossfade_frames / n, 0.03)``, ``region_end_frac =
@@ -13,19 +14,38 @@ min(1 - tail_frac, 0.97)`` — because the crossfade was left to the *sampler* (
 SFZ ``loop_crossfade`` opcode), so audio had to be reserved *after* ``loop_end`` for the
 sampler to fade into. Once ``loop_crossfade_ms`` exceeded 15% of the sample length,
 ``region_end_frac`` dropped below ``region_start_frac``, the window inverted, and looping was
-silently disabled for **every** sample. V2 bakes the crossfade instead, and bakes it out of the
-material *preceding* ``loop_start`` (see `bake_crossfade`) — nothing after ``loop_end`` is
-needed at all. So the search window is now a pair of plain config fractions that do not depend
-on the crossfade length in any way, and no crossfade setting can collapse it. A crossfade too
-long for the loop it belongs to is clamped to fit (`crossfade_frames`) rather than disabling
-looping.
+silently disabled for **every** sample. V2 decouples the two instead. The search window is now a
+pair of plain config fractions that do not depend on the crossfade length in any way, so no
+crossfade setting can collapse it in *either* mode; a crossfade too long for the audio available
+is clamped to fit (`crossfade_frames`) rather than disabling looping. Baked mode additionally
+needs nothing after ``loop_end`` at all, since it fades using the material *preceding*
+``loop_start`` (see `bake_crossfade`).
 
-**The crossfade is baked, not delegated.** ``loop_crossfade_ms`` (from `CrossfadeConfig`, not
-duplicated into `LoopParams`) worth of the loop's tail is crossfaded into the audio immediately
-before ``loop_start``, so the last frame of the loop equals the frame just before
-``loop_start``, and the wrap to ``loop_start`` is sample-continuous. Step 7's SFZ export
-therefore does **not** emit V1's ``loop_crossfade`` opcode — the fade is already in the audio,
-and asking the sampler to fade again would double it.
+**The crossfade can be baked or delegated** — ``CrossfadeConfig.loop_crossfade_mode``,
+defaulting to ``"baked"``. ``loop_crossfade_ms`` comes from `CrossfadeConfig` too, not
+duplicated into `LoopParams`.
+
+In ``"baked"`` mode, that many frames of the loop's tail are crossfaded into the audio
+immediately before ``loop_start``, so the last frame of the loop equals the frame just before
+``loop_start`` and the wrap is sample-continuous. It sounds identical in every sampler, needs
+no opcode support, and export must **not** also emit ``loop_crossfade`` — the fade is already
+in the audio, and asking the sampler to fade again would double it.
+
+In ``"sfz"`` mode the audio is left completely untouched and V1's arrangement returns: export
+emits ``loop_crossfade`` and the sampler fades at playback time. That keeps the loop region
+bit-identical to the recording, at the cost of only working in samplers that implement the
+opcode (ARIA/Cakewalk do; not every sampler does, and one that ignores it simply loops with no
+fade). Either way ``sample.loop_crossfade_frames`` records the length actually settled on, so
+export has one truthful per-sample number to write and the UI has one to display.
+
+**Bug 7 does not come back in ``sfz`` mode.** V1's mistake was not delegating the fade, it was
+*shrinking the search window* to reserve a tail for the sampler. V2 never shrinks the window;
+it clamps the requested length per sample against the tail detection happened to leave
+(`crossfade_frames`), so the opcode can never claim a longer fade than the audio behind it, and
+an over-long request costs fade length instead of costing every loop in the instrument. With
+the default ``region_end_frac`` of 0.97 the tail is always at least 3% of the sample, so any
+crossfade up to that (300 ms on a 10 s sample) is honored exactly; wanting more tail than that
+is a reason to lower ``region_end_frac`` — an explicit knob rather than a hidden coupling.
 
 The fade **curve** is configurable (``CrossfadeConfig.loop_crossfade_shape``) and defaults to
 ``"linear"``, not to the equal-power curve. That default is deliberate: the two segments being
@@ -53,7 +73,7 @@ from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from autosampler.config.hints import ui_hint
-from autosampler.config.schema import LoopCrossfadeShape
+from autosampler.config.schema import LoopCrossfadeMode, LoopCrossfadeShape
 from autosampler.domain.models import SampleSet
 from autosampler.domain.units import ms_to_frames
 
@@ -291,24 +311,36 @@ def find_loop_points(
     return LoopPoints(start=best_start, end=best_end)
 
 
-def crossfade_frames(points: LoopPoints, crossfade_ms: float, sample_rate: int) -> int:
+def crossfade_frames(
+    points: LoopPoints, crossfade_ms: float, sample_rate: int, *, headroom_frames: int
+) -> int:
     """Clamp a requested crossfade length to what this loop can actually accommodate.
 
-    Two limits apply: the fade reads the material immediately before ``loop_start``, so it
-    cannot be longer than ``points.start``; and it must fit inside the loop, so it cannot be
-    longer than the loop itself. Exceeding either shortens the fade — it never disables the
-    loop, which is what V1 did (bug 7).
+    Two limits always apply. The fade must fit inside the loop, so it cannot exceed
+    ``end - start``. And it needs real audio *outside* the loop to fade with, on whichever side
+    the fade reads from — that quantity is `headroom_frames`, and it is the one thing that
+    differs between the two crossfade modes:
+
+    - ``baked`` reads the material immediately *before* ``loop_start`` (see `bake_crossfade`),
+      so its headroom is ``points.start``.
+    - ``sfz`` hands the job to the sampler, which fades using the tail *after* ``loop_end``,
+      so its headroom is ``n_frames - points.end``.
+
+    Exceeding either limit shortens the fade. It never disables the loop, which is what V1 did
+    (bug 7) — and it is why `apply_loop` clamps rather than shrinking the search window, in
+    ``sfz`` mode just as much as in ``baked`` mode.
 
     Args:
         points: The detected loop.
         crossfade_ms: Requested crossfade length in milliseconds.
         sample_rate: Sample rate in Hz.
+        headroom_frames: Usable frames outside the loop on the side the fade reads from.
 
     Returns:
-        The crossfade length in frames, in ``[0, min(start, end - start)]``.
+        The crossfade length in frames, in ``[0, min(headroom_frames, end - start)]``.
     """
     requested = ms_to_frames(crossfade_ms, sample_rate)
-    return max(0, min(requested, points.start, points.end - points.start))
+    return max(0, min(requested, headroom_frames, points.end - points.start))
 
 
 def fade_curves(
@@ -363,7 +395,9 @@ def bake_crossfade(
         ``(processed_audio, frames_applied)``. The input buffer is returned unchanged, with
         ``0``, when the clamped length is zero.
     """
-    frames = crossfade_frames(points, crossfade_ms, sample_rate)
+    frames = crossfade_frames(
+        points, crossfade_ms, sample_rate, headroom_frames=points.start
+    )
     if frames == 0:
         return audio, 0
 
@@ -387,30 +421,54 @@ def apply_loop(
     params: LoopParams,
     *,
     crossfade_ms: float,
+    crossfade_mode: LoopCrossfadeMode = "baked",
     crossfade_shape: LoopCrossfadeShape = "linear",
 ) -> None:
-    """Detect loop points for every sustain sample and bake the crossfade in place.
+    """Detect loop points for every sustain sample, and crossfade them per `crossfade_mode`.
+
+    In ``baked`` mode the fade is rendered into ``sample.audio`` here, so it sounds the same in
+    every sampler and export emits no crossfade opcode. In ``sfz`` mode the audio is left
+    completely untouched and the fade becomes export's problem: the clamped length lands in
+    ``sample.loop_crossfade_frames`` for export to write as a ``loop_crossfade`` opcode, which
+    is V1's arrangement — with the difference that an over-long request is clamped per sample
+    instead of collapsing the search window and disabling every loop (bug 7).
 
     Samples with no detectable loop keep ``loop_start``/``loop_end`` at ``None`` and are left
     untouched; export (step 7) then omits their loop opcodes. Release samples are never
     looped, so they are not passed here at all — matching V1.
 
     Args:
-        sustain: Sustain samples; ``audio``, ``loop_start``, and ``loop_end`` are mutated.
+        sustain: Sustain samples; ``loop_start``, ``loop_end``, and ``loop_crossfade_frames``
+            are set, and ``audio`` is mutated in ``baked`` mode only.
         params: Validated `LoopParams`.
-        crossfade_ms: Baked crossfade length, from ``CrossfadeConfig.loop_crossfade_ms``.
-        crossfade_shape: Fade curve, from ``CrossfadeConfig.loop_crossfade_shape``.
+        crossfade_ms: Crossfade length, from ``CrossfadeConfig.loop_crossfade_ms``.
+        crossfade_mode: ``"baked"`` or ``"sfz"``, from
+            ``CrossfadeConfig.loop_crossfade_mode``.
+        crossfade_shape: Fade curve, from ``CrossfadeConfig.loop_crossfade_shape``; ignored in
+            ``sfz`` mode, where the curve is the sampler's choice.
     """
     for sample in sustain:
         points = find_loop_points(sample.audio, sample.sample_rate, params)
         if points is None:
             continue
-        sample.audio, _ = bake_crossfade(
-            sample.audio,
-            points,
-            crossfade_ms=crossfade_ms,
-            sample_rate=sample.sample_rate,
-            shape=crossfade_shape,
-        )
+
+        if crossfade_mode == "baked":
+            sample.audio, frames = bake_crossfade(
+                sample.audio,
+                points,
+                crossfade_ms=crossfade_ms,
+                sample_rate=sample.sample_rate,
+                shape=crossfade_shape,
+            )
+        else:
+            # The sampler fades using the tail after loop_end, so that tail is the headroom.
+            frames = crossfade_frames(
+                points,
+                crossfade_ms,
+                sample.sample_rate,
+                headroom_frames=sample.n_frames - points.end,
+            )
+
         sample.loop_start = points.start
         sample.loop_end = points.end
+        sample.loop_crossfade_frames = frames
