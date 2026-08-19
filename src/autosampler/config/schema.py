@@ -23,6 +23,7 @@ type JSONValue = str | int | float | bool | list[JSONValue] | dict[str, JSONValu
 
 SampleFormat = Literal["pcm16", "pcm24", "pcm32", "float32"]
 ContainerFormat = Literal["flac", "wav"]
+LoopCrossfadeShape = Literal["linear", "equal_power"]
 
 _MIN_MIDI_VELOCITY = 0
 _MAX_MIDI_VELOCITY = 127
@@ -239,7 +240,12 @@ class SelectionConfig(BaseModel):
 
 
 class CrossfadeConfig(BaseModel):
-    """Overlap behavior between adjacent velocity zones and baked sample loops."""
+    """Overlap behavior between adjacent velocity zones and baked sample loops.
+
+    Everything about the *loop* crossfade lives here (length and curve); everything about loop
+    *detection* lives in ``dsp.loop.LoopParams``. That split is why `LoopParams` has no
+    crossfade fields of its own — each field is defined exactly once.
+    """
 
     model_config = ConfigDict(extra="forbid", strict=True)
 
@@ -262,7 +268,19 @@ class CrossfadeConfig(BaseModel):
             order=1,
             unit="ms",
             step=1.0,
-            help_text="Baked equal-power crossfade length at each detected loop point.",
+            help_text="Baked crossfade length at each detected loop point.",
+        ),
+    )
+    loop_crossfade_shape: LoopCrossfadeShape = Field(
+        default="linear",
+        json_schema_extra=ui_hint(
+            group="Crossfade",
+            order=2,
+            help_text=(
+                "Loop crossfade curve. linear holds a steady level on the phase-matched, "
+                "highly correlated material the loop finder selects; equal_power preserves "
+                "power on decorrelated (noisy) sustains but lifts correlated material ~3 dB."
+            ),
         ),
     )
 
