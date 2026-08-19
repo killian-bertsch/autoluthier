@@ -385,6 +385,109 @@ def default_stage_chain() -> list[StageConfig]:
     ]
 
 
+class SampleOverride(BaseModel):
+    """A persisted manual decision about one ``(note, velocity)`` sample.
+
+    Overrides always beat auto-detection: the pipeline hands them to `dsp.loop` *instead of*
+    running detection for that sample, rather than letting detection run and then patching the
+    result. That ordering is what makes them correct in ``baked`` crossfade mode — the fade has
+    to be rendered at the loop points that will actually be used, and a fade baked at
+    auto-detected points could not be moved afterwards.
+
+    Only loop points are overridable today, which is what the waveform editor (step 11) edits.
+    New override fields belong here, and `pipeline.graph.LoopStep` is where a config override is
+    translated into the primitives `dsp.loop` takes.
+    """
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    note: int = Field(
+        ge=0,
+        le=127,
+        json_schema_extra=ui_hint(
+            group="Overrides", order=0, help_text="MIDI note this override applies to."
+        ),
+    )
+    velocity: int = Field(
+        ge=0,
+        le=127,
+        json_schema_extra=ui_hint(
+            group="Overrides",
+            order=1,
+            help_text="Recorded MIDI velocity this override applies to.",
+        ),
+    )
+    loop_start: int | None = Field(
+        default=None,
+        ge=0,
+        json_schema_extra=ui_hint(
+            group="Overrides",
+            order=2,
+            unit="frames",
+            help_text="Manual loop start in frames; replaces detection for this sample.",
+        ),
+    )
+    loop_end: int | None = Field(
+        default=None,
+        ge=1,
+        json_schema_extra=ui_hint(
+            group="Overrides",
+            order=3,
+            unit="frames",
+            help_text="Manual loop end in frames; replaces detection for this sample.",
+        ),
+    )
+    loop_disabled: bool = Field(
+        default=False,
+        json_schema_extra=ui_hint(
+            group="Overrides",
+            order=4,
+            help_text="Force this sample to have no loop at all, whatever detection would find.",
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _check_loop_points(self) -> Self:
+        """Reject a half-specified or self-contradictory loop override.
+
+        Returns:
+            The validated model.
+
+        Raises:
+            ValueError: if only one of ``loop_start``/``loop_end`` is set, if they are not
+                strictly ordered, or if explicit points are combined with ``loop_disabled``.
+        """
+        if (self.loop_start is None) != (self.loop_end is None):
+            raise ValueError(
+                "loop_start and loop_end must be set together — a loop needs both ends; "
+                f"got loop_start={self.loop_start}, loop_end={self.loop_end}"
+            )
+        if self.loop_start is not None and self.loop_end is not None:
+            if self.loop_end <= self.loop_start:
+                raise ValueError(
+                    f"loop_end ({self.loop_end}) must be greater than "
+                    f"loop_start ({self.loop_start})"
+                )
+            if self.loop_disabled:
+                raise ValueError(
+                    "loop_disabled cannot be combined with explicit loop points — "
+                    "drop the points to disable the loop, or drop loop_disabled to use them"
+                )
+        return self
+
+    @property
+    def key(self) -> tuple[int, int]:
+        """The ``(note, velocity)`` pair this override addresses."""
+        return (self.note, self.velocity)
+
+    @property
+    def loop_points(self) -> tuple[int, int] | None:
+        """``(loop_start, loop_end)`` if both are set, else ``None``."""
+        if self.loop_start is None or self.loop_end is None:
+            return None
+        return (self.loop_start, self.loop_end)
+
+
 class ProjectConfig(BaseModel):
     """Everything needed to process one instrument.
 
@@ -410,6 +513,14 @@ class ProjectConfig(BaseModel):
     crossfade: CrossfadeConfig = Field(default_factory=CrossfadeConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
     stages: list[StageConfig] = Field(default_factory=default_stage_chain)
+    overrides: list[SampleOverride] = Field(
+        default_factory=list,
+        json_schema_extra=ui_hint(
+            group="Overrides",
+            order=5,
+            help_text="Per-sample manual decisions that always beat auto-detection.",
+        ),
+    )
 
     @model_validator(mode="after")
     def _check_velocity_layers_out(self) -> Self:
@@ -420,3 +531,27 @@ class ProjectConfig(BaseModel):
                 f"exceed recording.velocity_layers ({self.recording.velocity_layers})"
             )
         return self
+
+    @model_validator(mode="after")
+    def _check_unique_overrides(self) -> Self:
+        """Reject two overrides addressing the same sample.
+
+        Returns:
+            The validated model.
+
+        Raises:
+            ValueError: if any ``(note, velocity)`` pair appears twice. Last-one-wins would be
+                exactly the kind of silent config failure `extra="forbid"` exists to prevent.
+        """
+        seen: set[tuple[int, int]] = set()
+        for override in self.overrides:
+            if override.key in seen:
+                raise ValueError(
+                    f"duplicate override for note={override.note} velocity={override.velocity}"
+                )
+            seen.add(override.key)
+        return self
+
+    def override_table(self) -> dict[tuple[int, int], SampleOverride]:
+        """Return the overrides indexed by ``(note, velocity)`` for O(1) per-sample lookup."""
+        return {override.key: override for override in self.overrides}

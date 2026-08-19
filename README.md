@@ -14,12 +14,12 @@ editing, a sample matrix, analysis views, and live preview.
 This project is fully independent of V1: separate git repo, separate `uv`-managed virtualenv,
 no shared code or config.
 
-See [docs/PLAN.md](docs/PLAN.md) for the full rewrite plan and [CLAUDE.md](CLAUDE.md) for the
-development ledger tracking progress across steps.
+See [../CLAUDE.md](../CLAUDE.md) for the full rewrite plan and the development ledger tracking
+progress across steps — it is the single source of truth for this project.
 
 ## Status
 
-Early scaffold — see the ledger in `CLAUDE.md` for the current step.
+In development — see the ledger in [../CLAUDE.md](../CLAUDE.md) for the current step.
 
 ## Setup
 

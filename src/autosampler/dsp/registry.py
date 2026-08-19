@@ -10,12 +10,12 @@ registered nowhere yet, since it operates on a whole `SampleSet` rather than one
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 
 from pydantic import BaseModel
 
-from autosampler.dsp.base import Stage
+from autosampler.dsp.base import SampleTarget, Stage
 from autosampler.dsp.dc import DcRemoveParams, DcRemoveStage
 from autosampler.dsp.eq import EqParams, EqStage
 from autosampler.dsp.limiter import LimiterParams, LimiterStage
@@ -26,10 +26,11 @@ from autosampler.dsp.trim import TrimParams, TrimStage
 
 @dataclass(frozen=True)
 class StageRegistration:
-    """One registry entry: a stage id's params model and how to build the stage from it."""
+    """One registry entry: a stage id's params model, how to build it, and what it applies to."""
 
     params_model: type[BaseModel]
     factory: Callable[..., Stage]
+    targets: SampleTarget = "both"
 
 
 _REGISTRY: dict[str, StageRegistration] = {
@@ -37,7 +38,9 @@ _REGISTRY: dict[str, StageRegistration] = {
     "trim": StageRegistration(TrimParams, TrimStage),
     "eq": StageRegistration(EqParams, EqStage),
     "stereo": StageRegistration(StereoParams, StereoStage),
-    "transient": StageRegistration(TransientParams, TransientStage),
+    # Sustain only, matching V1: its `process()` iterated `data.sustain`, whatever its
+    # docstring said (see the V1 notes in ../../../CLAUDE.md).
+    "transient": StageRegistration(TransientParams, TransientStage, targets="sustain"),
     "limiter": StageRegistration(LimiterParams, LimiterStage),
 }
 
@@ -63,7 +66,7 @@ def get_registration(stage_id: str) -> StageRegistration:
         ) from None
 
 
-def build_stage(stage_id: str, params: dict[str, object]) -> Stage:
+def build_stage(stage_id: str, params: Mapping[str, object]) -> Stage:
     """Validate `params` against the registered model and construct the stage.
 
     Args:

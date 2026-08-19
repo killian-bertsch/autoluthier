@@ -13,10 +13,21 @@ chain.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 import numpy as np
 from numpy.typing import NDArray
+
+SampleTarget = Literal["sustain", "release", "both"]
+"""Which samples a stage applies to.
+
+V1 fixed this per processor and V2 keeps its choices: DC removal and trim ran over every
+sample, the transient shaper only over sustain (its docstring claimed otherwise; the code is
+what shipped), and the loop finder only over sustain since release tails are never looped. The
+step-4 stages (eq, stereo, limiter) shape tone and level, which a release tail needs as much as
+a sustain, so they target both. The mapping lives in `dsp/registry.py` next to each stage's
+params model, because it is stage metadata rather than something the pipeline should decide.
+"""
 
 
 @dataclass(frozen=True, slots=True)

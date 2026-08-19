@@ -8,7 +8,7 @@ of float64 (V2's memory-budget decision), and a dict index on ``SampleSet`` for 
 from __future__ import annotations
 
 from collections.abc import Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 from numpy.typing import NDArray
@@ -46,6 +46,17 @@ class Sample:
     def n_channels(self) -> int:
         """Number of audio channels: 1 for a mono (1-D) array."""
         return 1 if self.audio.ndim == 1 else int(self.audio.shape[1])
+
+    def copy(self) -> Sample:
+        """Return an independent copy, with its own audio buffer.
+
+        `pipeline.preview` needs this: it must not mutate the loaded set that the server keeps
+        in memory for the next preview, and every DSP stage writes into ``audio``.
+
+        Returns:
+            A new `Sample` sharing nothing mutable with this one.
+        """
+        return replace(self, audio=self.audio.copy())
 
 
 @dataclass

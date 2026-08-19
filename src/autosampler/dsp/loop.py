@@ -74,7 +74,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from autosampler.config.hints import ui_hint
 from autosampler.config.schema import LoopCrossfadeMode, LoopCrossfadeShape
-from autosampler.domain.models import SampleSet
+from autosampler.domain.models import Sample, SampleSet
 from autosampler.domain.units import ms_to_frames
 
 _RMS_WINDOW_MS = 10.0
@@ -416,6 +416,83 @@ def bake_crossfade(
     return out, frames
 
 
+def apply_loop_to_sample(
+    sample: Sample,
+    params: LoopParams,
+    *,
+    crossfade_ms: float,
+    crossfade_mode: LoopCrossfadeMode = "baked",
+    crossfade_shape: LoopCrossfadeShape = "linear",
+    forced_points: LoopPoints | None = None,
+    disabled: bool = False,
+) -> None:
+    """Detect (or accept) this sample's loop and apply the crossfade `crossfade_mode` selects.
+
+    This is the per-sample entry point the pipeline uses, so that per-sample work stays
+    per-sample and can run in a worker process (`pipeline.executor`). `apply_loop` is the
+    same thing over a whole `SampleSet`.
+
+    `forced_points` and `disabled` are how a persisted per-sample override reaches this stage;
+    `pipeline.graph.LoopStep` translates a `config.schema.SampleOverride` into them. They are
+    honored *instead of* detection rather than patched in afterwards, which is what makes an
+    override correct in ``baked`` mode — the fade is rendered at the points that will actually
+    be used, and a fade already baked at auto-detected points could not be relocated.
+
+    Args:
+        sample: The sustain sample; ``loop_start``, ``loop_end``, and ``loop_crossfade_frames``
+            are set, and ``audio`` is mutated in ``baked`` mode only.
+        params: Validated `LoopParams` (detection window and minimum loop length).
+        crossfade_ms: Requested crossfade length, from ``CrossfadeConfig.loop_crossfade_ms``.
+        crossfade_mode: ``"baked"`` or ``"sfz"``, from ``CrossfadeConfig.loop_crossfade_mode``.
+        crossfade_shape: Fade curve, from ``CrossfadeConfig.loop_crossfade_shape``; ignored in
+            ``sfz`` mode, where the curve is the sampler's choice.
+        forced_points: Loop points to use instead of running detection.
+        disabled: If ``True``, this sample gets no loop at all, whatever detection would find.
+
+    Raises:
+        ValueError: if `forced_points` don't fit inside this sample's audio.
+    """
+    if disabled:
+        sample.loop_start = None
+        sample.loop_end = None
+        sample.loop_crossfade_frames = 0
+        return
+
+    if forced_points is not None:
+        if not 0 <= forced_points.start < forced_points.end <= sample.n_frames:
+            raise ValueError(
+                f"loop override for note={sample.note} velocity={sample.velocity} is outside "
+                f"the sample: loop_start={forced_points.start}, loop_end={forced_points.end}, "
+                f"length={sample.n_frames} frames"
+            )
+        points: LoopPoints | None = forced_points
+    else:
+        points = find_loop_points(sample.audio, sample.sample_rate, params)
+    if points is None:
+        return
+
+    if crossfade_mode == "baked":
+        sample.audio, frames = bake_crossfade(
+            sample.audio,
+            points,
+            crossfade_ms=crossfade_ms,
+            sample_rate=sample.sample_rate,
+            shape=crossfade_shape,
+        )
+    else:
+        # The sampler fades using the tail after loop_end, so that tail is the headroom.
+        frames = crossfade_frames(
+            points,
+            crossfade_ms,
+            sample.sample_rate,
+            headroom_frames=sample.n_frames - points.end,
+        )
+
+    sample.loop_start = points.start
+    sample.loop_end = points.end
+    sample.loop_crossfade_frames = frames
+
+
 def apply_loop(
     sustain: SampleSet,
     params: LoopParams,
@@ -437,6 +514,10 @@ def apply_loop(
     untouched; export (step 7) then omits their loop opcodes. Release samples are never
     looped, so they are not passed here at all — matching V1.
 
+    Every sample here gets auto-detection. Per-sample overrides are applied by the pipeline,
+    which walks samples individually through `apply_loop_to_sample` — this function is the
+    plain whole-set convenience.
+
     Args:
         sustain: Sustain samples; ``loop_start``, ``loop_end``, and ``loop_crossfade_frames``
             are set, and ``audio`` is mutated in ``baked`` mode only.
@@ -448,27 +529,10 @@ def apply_loop(
             ``sfz`` mode, where the curve is the sampler's choice.
     """
     for sample in sustain:
-        points = find_loop_points(sample.audio, sample.sample_rate, params)
-        if points is None:
-            continue
-
-        if crossfade_mode == "baked":
-            sample.audio, frames = bake_crossfade(
-                sample.audio,
-                points,
-                crossfade_ms=crossfade_ms,
-                sample_rate=sample.sample_rate,
-                shape=crossfade_shape,
-            )
-        else:
-            # The sampler fades using the tail after loop_end, so that tail is the headroom.
-            frames = crossfade_frames(
-                points,
-                crossfade_ms,
-                sample.sample_rate,
-                headroom_frames=sample.n_frames - points.end,
-            )
-
-        sample.loop_start = points.start
-        sample.loop_end = points.end
-        sample.loop_crossfade_frames = frames
+        apply_loop_to_sample(
+            sample,
+            params,
+            crossfade_ms=crossfade_ms,
+            crossfade_mode=crossfade_mode,
+            crossfade_shape=crossfade_shape,
+        )

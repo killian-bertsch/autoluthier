@@ -70,3 +70,17 @@ class TestInstrumentAudio:
         audio = InstrumentAudio(sustain=sustain, release=release)
         assert audio.sustain is sustain
         assert audio.release is release
+
+
+class TestSampleCopy:
+    def test_copy_is_independent_but_carries_the_metadata(self) -> None:
+        original = _sample(60, 127)
+        original.loop_start, original.loop_end = 10, 90
+        original.loop_crossfade_frames = 8
+
+        clone = original.copy()
+        clone.audio[0] = 0.5
+
+        assert original.audio[0] != 0.5
+        assert (clone.note, clone.velocity, clone.sample_rate) == (60, 127, original.sample_rate)
+        assert (clone.loop_start, clone.loop_end, clone.loop_crossfade_frames) == (10, 90, 8)
