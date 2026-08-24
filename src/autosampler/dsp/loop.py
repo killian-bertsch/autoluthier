@@ -192,6 +192,23 @@ def upward_zero_crossings(
     return local + start
 
 
+def zero_crossings(audio: NDArray[np.float32]) -> NDArray[np.intp]:
+    """Return every upward zero crossing in `audio`, downmixed to mono first.
+
+    Exposed for the browser waveform editor's zero-crossing snap (step 11): dragging a loop
+    handle should snap to the exact same crossing definition `find_loop_points` itself uses,
+    rather than a reimplementation of it in JavaScript that could disagree at the margins.
+
+    Args:
+        audio: Audio, shape ``(n_frames,)`` or ``(n_frames, n_channels)``.
+
+    Returns:
+        Ascending absolute frame indices of every upward zero crossing in the whole sample.
+    """
+    mono = _to_mono(audio)
+    return upward_zero_crossings(mono, 0, mono.size)
+
+
 def _local_rms(
     mono: NDArray[np.float64], indices: NDArray[np.intp], window: int
 ) -> NDArray[np.float64]:

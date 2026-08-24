@@ -32,6 +32,10 @@ def test_unknown_job_id_is_404(client: TestClient) -> None:
     assert client.get("/api/jobs/does-not-exist").status_code == 404
 
 
+def test_job_output_before_completion_is_404(client: TestClient) -> None:
+    assert client.get("/api/jobs/does-not-exist/output").status_code == 404
+
+
 def test_job_runs_and_writes_output(
     client: TestClient, api_instrument: Instrument, tmp_path: Path
 ) -> None:
@@ -50,3 +54,8 @@ def test_job_runs_and_writes_output(
     out = output_dir / api_instrument.folder.name
     assert (out / f"{api_instrument.folder.name}_sustain.sfz").is_file()
     assert list((out / "samples").glob("*.flac"))
+
+    output = client.get(f"/api/jobs/{job_id}/output")
+    assert output.status_code == 200
+    body = output.json()
+    assert body["sustain_sfz"] == (out / f"{api_instrument.folder.name}_sustain.sfz").read_text()

@@ -5,8 +5,12 @@
 // driven by a JSON Schema fetched at runtime, not something a fixed Alpine template can express.
 
 import { api } from "./api.js";
+import { renderAnalysisView } from "./analysis-view.js";
+import { renderMatrixView } from "./matrix-view.js";
 import { renderParamForm } from "./param-form.js";
+import { renderSfzView } from "./sfz-view.js";
 import { renderStageChain } from "./stage-chain.js";
+import { renderWaveformView } from "./waveform-view.js";
 
 // Nav section -> the ProjectConfig schema's $defs key holding that section's model.
 // "general" is handled separately below: it renders the top-level ProjectConfig schema itself,
@@ -30,6 +34,8 @@ document.addEventListener("alpine:init", () => {
     openFolderInput: "",
     saveState: "idle", // idle | dirty | saving | saved | error
     errorMessage: "",
+    selectedSampleId: null,
+    lastJobId: null,
 
     async init() {
       this.workspace = await api.listWorkspace().catch(() => []);
@@ -67,15 +73,64 @@ document.addEventListener("alpine:init", () => {
       this.$nextTick(() => this.renderActiveSection());
     },
 
+    openSample(id) {
+      this.selectedSampleId = id;
+      this.section = "waveform";
+      this.$nextTick(() => this.renderActiveSection());
+    },
+
     renderActiveSection() {
       const el = this.$refs.sectionBody;
       if (!el || !this.config) return;
+      // Heavy views (waveform/matrix/analysis/sfz) hold live resources — a WaveSurfer
+      // instance, an AudioContext playback node, an open EventSource — that a plain
+      // `innerHTML = ""` would leak. Every renderer tears its own previous state down when
+      // re-entered, but switching to a *different* section bypasses that renderer entirely,
+      // so this is the one place that has to catch it regardless of where we're headed next.
+      if (el._teardown) {
+        el._teardown();
+        el._teardown = null;
+      }
 
       if (this.section === "stages") {
         renderStageChain(el, this.config.stages, this.stageSchemas, (stages) => {
           this.config.stages = stages;
           this.markDirty();
           this.renderActiveSection();
+        });
+        return;
+      }
+
+      if (this.section === "waveform") {
+        renderWaveformView(el, {
+          api,
+          config: this.config,
+          selectedSampleId: this.selectedSampleId,
+          onSelectSample: (id) => {
+            this.selectedSampleId = id;
+          },
+          markDirty: () => this.markDirty(),
+        });
+        return;
+      }
+
+      if (this.section === "matrix") {
+        renderMatrixView(el, { api, openSample: (id) => this.openSample(id) });
+        return;
+      }
+
+      if (this.section === "analysis") {
+        renderAnalysisView(el, { api });
+        return;
+      }
+
+      if (this.section === "sfz") {
+        renderSfzView(el, {
+          api,
+          lastJobId: this.lastJobId,
+          setLastJobId: (id) => {
+            this.lastJobId = id;
+          },
         });
         return;
       }

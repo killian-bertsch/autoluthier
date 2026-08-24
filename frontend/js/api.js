@@ -40,4 +40,22 @@ export const api = {
     request("/api/project", { method: "POST", body: JSON.stringify({ folder }) }),
   saveProject: (config) =>
     request("/api/project", { method: "PUT", body: JSON.stringify(config) }),
+
+  listSamples: () => request("/api/samples"),
+  getPeaks: (id, source = "raw") =>
+    request(`/api/peaks/${encodeURIComponent(id)}?source=${source}`),
+  getZeroCrossings: (id, source = "raw") =>
+    request(`/api/zero-crossings/${encodeURIComponent(id)}?source=${source}`),
+  audioUrl: (id, source = "raw") => `/api/audio/${encodeURIComponent(id)}?source=${source}`,
+
+  getMatrix: () => request("/api/matrix"),
+  getAnalysis: () => request("/api/analysis"),
+
+  getSfzPreview: () => request("/api/sfz/preview"),
+  runPreview: (body) =>
+    request("/api/preview", { method: "POST", body: JSON.stringify(body ?? {}) }),
+
+  startJob: (body) => request("/api/jobs", { method: "POST", body: JSON.stringify(body ?? {}) }),
+  getJob: (id) => request(`/api/jobs/${encodeURIComponent(id)}`),
+  getJobOutput: (id) => request(`/api/jobs/${encodeURIComponent(id)}/output`),
 };

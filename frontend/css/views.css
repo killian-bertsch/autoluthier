@@ -1,0 +1,250 @@
+/* The four step-11 views: waveform/loop editor, sample matrix, analysis, SFZ + job log.
+   All four are vanilla-DOM renderers (waveform-view.js / matrix-view.js / analysis-view.js /
+   sfz-view.js), not Alpine components — same split as the stage-chain editor. */
+
+.panel-wide {
+  max-width: 960px;
+}
+
+.view-loading {
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 20px 0;
+}
+
+.chart-empty {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.wv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.wv-toolbar .field-select {
+  flex: 0 0 auto;
+  max-width: 200px;
+}
+
+/* --- Waveform / loop editor --- */
+
+.wv-waveform {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-height: 120px;
+  margin-bottom: 12px;
+}
+
+.wv-snap-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.wv-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wv-audition {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wv-ab {
+  display: flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.wv-ab button {
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid var(--border-strong);
+}
+
+.wv-ab button:last-child {
+  border-right: none;
+}
+
+.wv-ab button.is-active {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+.wv-audition-message {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.wv-loop-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.wv-loop-label {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.wv-loop-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.wv-seam-canvas {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 480px;
+  height: 90px;
+}
+
+/* wavesurfer Regions plugin renders its own inline-styled elements; these override just enough
+   to read as this app's accent rather than the plugin defaults. Exact class names come from
+   wavesurfer.js 7.12's Regions plugin and were not visually verified in a live browser here
+   (see CLAUDE.md step 11 notes) — kept minimal for that reason. */
+::part(region) {
+  border-color: var(--accent-dim) !important;
+}
+
+/* --- Sample matrix --- */
+
+.mv-canvas-wrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  max-height: 70vh;
+  padding: 8px;
+}
+
+.mv-canvas {
+  display: block;
+  cursor: pointer;
+}
+
+.mv-legend {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.mv-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.matrix-view {
+  position: relative;
+}
+
+/* --- Analysis --- */
+
+.analysis-view .chart {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.chart-label {
+  font-size: 10px;
+  fill: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+.chart-axes line {
+  stroke-width: 1;
+}
+
+/* --- SFZ preview + diff + job log --- */
+
+.sfz-range {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+.sfz-body {
+  margin-bottom: 20px;
+}
+
+.sfz-text,
+.sfz-diff,
+.sfz-log {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 480px;
+  white-space: pre;
+}
+
+.diff-line {
+  white-space: pre;
+}
+
+.diff-added {
+  background: rgba(106, 154, 92, 0.15);
+  color: var(--success);
+}
+
+.diff-removed {
+  background: rgba(194, 91, 74, 0.15);
+  color: var(--danger);
+}
+
+.sfz-job-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sfz-job-status {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.sfz-log {
+  max-height: 220px;
+  color: var(--text-dim);
+  font-size: 11px;
+}

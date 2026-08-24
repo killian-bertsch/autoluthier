@@ -19,6 +19,7 @@ from autosampler.dsp.loop import (
     fade_curves,
     find_loop_points,
     upward_zero_crossings,
+    zero_crossings,
 )
 
 SR = 44_100
@@ -79,6 +80,32 @@ class TestLoopParams:
         """Crossfade length lives once, in CrossfadeConfig — never duplicated here."""
         assert "loop_crossfade_ms" not in LoopParams.model_fields
         assert not any("crossfade" in name for name in LoopParams.model_fields)
+
+
+class TestZeroCrossings:
+    """`zero_crossings` vs. `upward_zero_crossings` over the whole sample.
+
+    It must not disagree with the function the loop finder itself uses.
+    """
+
+    def test_mono_matches_full_range_upward_crossings(self) -> None:
+        audio = _sine(220.0, 2000)
+        expected = upward_zero_crossings(audio.astype(np.float64), 0, audio.size)
+        assert zero_crossings(audio).tolist() == expected.tolist()
+
+    def test_stereo_matches_channel_mean(self) -> None:
+        left = _sine(220.0, 2000)
+        right = _sine(220.0, 2000, amplitude=0.3)
+        stereo = np.stack([left, right], axis=1)
+        mono = stereo.astype(np.float64).mean(axis=1)
+        expected = upward_zero_crossings(mono, 0, mono.size)
+        assert zero_crossings(stereo).tolist() == expected.tolist()
+
+    def test_returns_ascending_indices(self) -> None:
+        audio = _sine(440.0, 5000)
+        indices = zero_crossings(audio)
+        assert indices.tolist() == sorted(indices.tolist())
+        assert indices.size > 0
 
 
 class TestUpwardZeroCrossings:

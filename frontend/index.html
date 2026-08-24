@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/views.css" />
   </head>
   <body>
     <div id="app" x-data="app()" x-cloak>
@@ -54,10 +55,18 @@
             </div>
 
             <div class="nav-group-label">Views</div>
-            <div class="nav-item disabled">Waveform &amp; Loop <span class="nav-badge">step 11</span></div>
-            <div class="nav-item disabled">Sample Matrix <span class="nav-badge">step 11</span></div>
-            <div class="nav-item disabled">Analysis <span class="nav-badge">step 11</span></div>
-            <div class="nav-item disabled">SFZ &amp; Log <span class="nav-badge">step 11</span></div>
+            <div class="nav-item" :class="{ active: section === 'waveform' }" @click="selectSection('waveform')">
+              Waveform &amp; Loop
+            </div>
+            <div class="nav-item" :class="{ active: section === 'matrix' }" @click="selectSection('matrix')">
+              Sample Matrix
+            </div>
+            <div class="nav-item" :class="{ active: section === 'analysis' }" @click="selectSection('analysis')">
+              Analysis
+            </div>
+            <div class="nav-item" :class="{ active: section === 'sfz' }" @click="selectSection('sfz')">
+              SFZ &amp; Log
+            </div>
           </div>
         </template>
       </nav>
@@ -97,11 +106,17 @@
         </template>
 
         <template x-if="section !== 'workspace' && project">
-          <div class="panel" x-ref="sectionBody"></div>
+          <div
+            class="panel"
+            :class="{ 'panel-wide': ['waveform', 'matrix', 'analysis', 'sfz'].includes(section) }"
+            x-ref="sectionBody"
+          ></div>
         </template>
       </main>
     </div>
 
+    <script src="vendor/wavesurfer.min.js"></script>
+    <script src="vendor/wavesurfer.regions.min.js"></script>
     <script type="module" src="js/app.js"></script>
     <script src="vendor/alpine.min.js" defer></script>
   </body>

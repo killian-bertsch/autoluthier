@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
+from autosampler.export.writer import RELEASE_SFZ_SUFFIX, SUSTAIN_SFZ_SUFFIX
 from autosampler.server.jobs import new_job_id, run_job
 from autosampler.server.sse import EventBroadcaster
 from autosampler.server.state import AppState, JobRecord
@@ -99,4 +100,45 @@ def get_job(job_id: str, request: Request) -> JobStatusResponse:
         error=job.error,
         output_dir=job.output_dir,
         events=job.events,
+    )
+
+
+class JobOutputResponse(BaseModel):
+    """The SFZ text a completed job actually wrote, for the SFZ view's diff against it."""
+
+    sustain_sfz: str | None
+    release_sfz: str | None
+
+
+@router.get("/api/jobs/{job_id}/output")
+def get_job_output(job_id: str, request: Request) -> JobOutputResponse:
+    """Return the sustain/release SFZ text a completed job wrote to disk.
+
+    Reads straight off disk rather than caching the text on `JobRecord`, since the written
+    files already are the durable record of what that run produced. This is what the SFZ
+    view diffs the current live preview against — "what changed since the last real render" —
+    since there is nowhere else a prior version of the instrument is kept.
+
+    Args:
+        job_id: A job id from `POST /api/jobs`.
+        request: The current request, used to reach server state.
+
+    Raises:
+        HTTPException: 404 if no job with this id exists, or it hasn't finished writing an
+            output directory yet.
+
+    Returns:
+        Each SFZ document's text, or `None` for one the run didn't produce (e.g. no release
+        samples were selected).
+    """
+    job = _state(request).jobs.get(job_id)
+    if job is None or job.output_dir is None:
+        raise HTTPException(status_code=404, detail=f"no completed output for job {job_id!r}")
+    out_dir = Path(job.output_dir)
+    instrument_name = out_dir.name
+    sustain_path = out_dir / f"{instrument_name}{SUSTAIN_SFZ_SUFFIX}"
+    release_path = out_dir / f"{instrument_name}{RELEASE_SFZ_SUFFIX}"
+    return JobOutputResponse(
+        sustain_sfz=sustain_path.read_text(encoding="utf-8") if sustain_path.is_file() else None,
+        release_sfz=release_path.read_text(encoding="utf-8") if release_path.is_file() else None,
     )
