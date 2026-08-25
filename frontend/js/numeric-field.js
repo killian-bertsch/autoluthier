@@ -9,8 +9,14 @@
 // widget — one implementation, constructed with plain JS properties, no attribute parsing.
 //
 // Fires a `numeric-change` CustomEvent (bubbles, detail: { value }) once a drag/edit/arrow-key
-// interaction commits. Never fires on every intermediate drag frame — callers that want live
-// feedback read the element's own `.value` getter, which is already updated by then.
+// interaction commits. It never fires on every intermediate drag frame.
+//
+// A second event, `numeric-input` (same detail shape), fires on *every* value change including
+// mid-drag frames — for step 12's live preview, which wants to reprocess audio continuously
+// while a DSP parameter is being scrubbed, not only once the drag ends. `numeric-change` still
+// fires exactly once per interaction, so consumers that persist to config (the normal case)
+// don't need to change; only a consumer that opts into `numeric-input` pays for the extra
+// events, and it owns its own debouncing (this element doesn't decide that for it).
 
 const PIXELS_PER_STEP = 4;
 const LOG_DRAG_SPAN_PX = 300; // px of drag to sweep the full [min, max] range in log mode
@@ -158,9 +164,14 @@ export class NumericField extends HTMLElement {
     }
   }
 
+  _fireInput() {
+    this.dispatchEvent(new CustomEvent("numeric-input", { bubbles: true, detail: { value: this._value } }));
+  }
+
   _commit(value) {
     this._value = clamp(value, this._min, this._max);
     this._render();
+    this._fireInput();
     this.dispatchEvent(new CustomEvent("numeric-change", { bubbles: true, detail: { value: this._value } }));
   }
 
@@ -194,6 +205,7 @@ export class NumericField extends HTMLElement {
       }
       this._value = clamp(next, this._min, this._max);
       this._render();
+      this._fireInput();
     };
 
     const onUp = () => {

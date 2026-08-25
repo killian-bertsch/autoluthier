@@ -17,9 +17,13 @@ import "./numeric-field.js";
  * @param {Record<string, any>} defs The document's `$defs`.
  * @param {Record<string, any>} data Current values, read by property name.
  * @param {(name: string, value: any) => void} onChange Called with the new value on commit.
+ * @param {(() => void) | undefined} onLivePreview If given, wired to every numeric field's
+ *   continuous `numeric-input` event (mid-drag, not just on commit) — the caller's own debounced
+ *   preview trigger. Omitted entirely for sections whose fields don't feed the DSP chain (e.g.
+ *   Recording, Selection), where a live audio preview would be misleading.
  * @returns {string[]} Names of the properties actually rendered (skips array-of-object fields).
  */
-export function renderParamForm(container, schema, defs, data, onChange) {
+export function renderParamForm(container, schema, defs, data, onChange, onLivePreview) {
   container.innerHTML = "";
   const properties = listProperties(schema, defs).filter((p) => isScalarField(p.node, defs));
   const grouped = groupProperties(properties);
@@ -33,7 +37,7 @@ export function renderParamForm(container, schema, defs, data, onChange) {
       container.appendChild(header);
     }
     for (const field of fields) {
-      container.appendChild(renderRow(field, data, onChange, defs));
+      container.appendChild(renderRow(field, data, onChange, defs, onLivePreview));
       rendered.push(field.name);
     }
   }
@@ -46,7 +50,7 @@ function isScalarField(node, defs) {
   return resolved.type !== "array" && resolved.type !== "object";
 }
 
-function renderRow(field, data, onChange, defs) {
+function renderRow(field, data, onChange, defs, onLivePreview) {
   const { name, node, nullable } = field;
   const row = document.createElement("div");
   row.className = "param-row";
@@ -63,9 +67,11 @@ function renderRow(field, data, onChange, defs) {
   const currentValue = data[name] ?? node.default ?? null;
 
   if (nullable) {
-    control.appendChild(renderNullableControl(field, data, onChange, defs, currentValue));
+    control.appendChild(renderNullableControl(field, data, onChange, defs, currentValue, onLivePreview));
   } else {
-    control.appendChild(buildControl(node, currentValue, (value) => onChange(name, value)));
+    control.appendChild(
+      buildControl(node, currentValue, (value) => onChange(name, value), onLivePreview)
+    );
   }
 
   row.appendChild(control);
@@ -73,7 +79,7 @@ function renderRow(field, data, onChange, defs) {
 }
 
 /** A nullable field gets an "auto" pill that swaps between `null` and a live control. */
-function renderNullableControl(field, data, onChange, defs, currentValue) {
+function renderNullableControl(field, data, onChange, defs, currentValue, onLivePreview) {
   const { name, node } = field;
   const wrap = document.createElement("div");
   wrap.className = "param-control";
@@ -86,7 +92,7 @@ function renderNullableControl(field, data, onChange, defs, currentValue) {
 
   let inner = null;
   if (!isAuto) {
-    inner = buildControl(node, currentValue, (value) => onChange(name, value));
+    inner = buildControl(node, currentValue, (value) => onChange(name, value), onLivePreview);
   }
 
   toggle.addEventListener("click", () => {
@@ -109,20 +115,20 @@ function defaultForType(node) {
 }
 
 /** Build the actual input control for one resolved (non-array/object) schema node. */
-function buildControl(node, value, commit) {
+function buildControl(node, value, commit, onLivePreview) {
   if (Array.isArray(node.enum)) {
-    return buildSelect(node, value, commit);
+    return buildSelect(node, value, commit, onLivePreview);
   }
   if (node.type === "boolean") {
-    return buildSwitch(value, commit);
+    return buildSwitch(value, commit, onLivePreview);
   }
   if (node.type === "integer" || node.type === "number") {
-    return buildNumericField(node, value, commit);
+    return buildNumericField(node, value, commit, onLivePreview);
   }
   return buildText(value, commit);
 }
 
-function buildSelect(node, value, commit) {
+function buildSelect(node, value, commit, onLivePreview) {
   const select = document.createElement("select");
   select.className = "field-select";
   for (const option of node.enum) {
@@ -132,11 +138,14 @@ function buildSelect(node, value, commit) {
     if (option === value) opt.selected = true;
     select.appendChild(opt);
   }
-  select.addEventListener("change", () => commit(select.value));
+  select.addEventListener("change", () => {
+    commit(select.value);
+    onLivePreview?.();
+  });
   return select;
 }
 
-function buildSwitch(value, commit) {
+function buildSwitch(value, commit, onLivePreview) {
   const el = document.createElement("div");
   el.className = `switch${value ? " on" : ""}`;
   el.setAttribute("role", "switch");
@@ -151,6 +160,7 @@ function buildSwitch(value, commit) {
     el.classList.toggle("on", next);
     el.setAttribute("aria-checked", String(next));
     commit(next);
+    onLivePreview?.();
   };
   el.addEventListener("click", toggle);
   el.addEventListener("keydown", (e) => {
@@ -162,7 +172,7 @@ function buildSwitch(value, commit) {
   return el;
 }
 
-function buildNumericField(node, value, commit) {
+function buildNumericField(node, value, commit, onLivePreview) {
   const el = document.createElement("numeric-field");
   const min = node.minimum ?? (Number.isFinite(node.exclusiveMinimum) ? node.exclusiveMinimum + epsilonFor(node) : Number.NEGATIVE_INFINITY);
   const max = node.maximum ?? (Number.isFinite(node.exclusiveMaximum) ? node.exclusiveMaximum - epsilonFor(node) : Number.POSITIVE_INFINITY);
@@ -177,6 +187,7 @@ function buildNumericField(node, value, commit) {
     const raw = e.detail.value;
     commit(node.type === "integer" ? Math.round(raw) : raw);
   });
+  if (onLivePreview) el.addEventListener("numeric-input", onLivePreview);
   return el;
 }
 

@@ -269,6 +269,16 @@ numeric-field .nf-unit {
   border-color: var(--danger);
 }
 
+.live-preview-status {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.live-preview-status.error {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
 /* Workspace / open-project list */
 .workspace-list {
   display: flex;

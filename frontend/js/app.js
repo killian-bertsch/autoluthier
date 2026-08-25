@@ -6,7 +6,9 @@
 
 import { api } from "./api.js";
 import { renderAnalysisView } from "./analysis-view.js";
+import { createLivePreviewScheduler } from "./live-preview.js";
 import { renderMatrixView } from "./matrix-view.js";
+import { renderOverridesView } from "./overrides-view.js";
 import { renderParamForm } from "./param-form.js";
 import { renderSfzView } from "./sfz-view.js";
 import { renderStageChain } from "./stage-chain.js";
@@ -36,8 +38,27 @@ document.addEventListener("alpine:init", () => {
     errorMessage: "",
     selectedSampleId: null,
     lastJobId: null,
+    livePreviewStatus: "idle", // idle | previewing | error
+    livePreviewError: "",
 
     async init() {
+      this._livePreview = createLivePreviewScheduler(api, {
+        onStart: () => {
+          this.livePreviewStatus = "previewing";
+        },
+        onSuccess: () => {
+          this.livePreviewStatus = "idle";
+        },
+        onError: (e) => {
+          this.livePreviewStatus = "error";
+          this.livePreviewError = e.message;
+          setTimeout(() => {
+            if (this.livePreviewStatus === "error") this.livePreviewStatus = "idle";
+          }, 3000);
+        },
+      });
+      document.addEventListener("keydown", (e) => this.onGlobalKeydown(e));
+
       this.workspace = await api.listWorkspace().catch(() => []);
       [this.schema, this.stageSchemas] = await Promise.all([
         api.getProjectSchema(),
@@ -47,6 +68,29 @@ document.addEventListener("alpine:init", () => {
         this._loadProject(await api.getProject());
       } catch {
         // No instrument open yet — the workspace/open-project screen is the landing view.
+      }
+    },
+
+    /** Debounced (~150ms) + cancellable — see `live-preview.js`. Wired to any control whose
+     *  edit feeds the DSP chain (stage params, crossfade), not to fields like Recording that
+     *  would need a reload to actually take effect. */
+    scheduleLivePreview() {
+      this.livePreviewStatus = "previewing";
+      this._livePreview.schedule(() => this.config);
+    },
+
+    onGlobalKeydown(e) {
+      const isSaveCombo = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s";
+      if (isSaveCombo && this.project) {
+        e.preventDefault();
+        if (this.saveState !== "saving") this.save();
+        return;
+      }
+      const tag = (e.target?.tagName || "").toLowerCase();
+      const typing = tag === "input" || tag === "textarea" || e.target?.isContentEditable;
+      if (typing) return;
+      if (e.key === "Escape" && this.errorMessage) {
+        this.errorMessage = "";
       }
     },
 
@@ -61,6 +105,8 @@ document.addEventListener("alpine:init", () => {
     },
 
     _loadProject(summary) {
+      this._livePreview?.cancel(); // any in-flight preview targeted the instrument being replaced
+      this.livePreviewStatus = "idle";
       this.project = summary;
       this.config = summary.config;
       this.saveState = "idle";
@@ -93,10 +139,26 @@ document.addEventListener("alpine:init", () => {
       }
 
       if (this.section === "stages") {
-        renderStageChain(el, this.config.stages, this.stageSchemas, (stages) => {
-          this.config.stages = stages;
-          this.markDirty();
-          this.renderActiveSection();
+        renderStageChain(
+          el,
+          this.config.stages,
+          this.stageSchemas,
+          (stages) => {
+            this.config.stages = stages;
+            this.markDirty();
+            this.renderActiveSection();
+          },
+          () => this.scheduleLivePreview()
+        );
+        return;
+      }
+
+      if (this.section === "overrides") {
+        renderOverridesView(el, {
+          api,
+          config: this.config,
+          markDirty: () => this.markDirty(),
+          openSample: (id) => this.openSample(id),
         });
         return;
       }
@@ -140,10 +202,21 @@ document.addEventListener("alpine:init", () => {
       const sectionData = isGeneral ? this.config : this.config[this.section];
       if (!sectionSchema) return;
 
-      renderParamForm(el, sectionSchema, this.schema.$defs, sectionData, (name, value) => {
-        sectionData[name] = value;
-        this.markDirty();
-      });
+      // Only crossfade's fields feed the DSP chain build_chain() reads — Recording/Selection/
+      // Output need a reload (Save) to actually take effect, so a live preview there would just
+      // be misleading busywork against audio that hasn't changed.
+      const onLivePreview = this.section === "crossfade" ? () => this.scheduleLivePreview() : undefined;
+      renderParamForm(
+        el,
+        sectionSchema,
+        this.schema.$defs,
+        sectionData,
+        (name, value) => {
+          sectionData[name] = value;
+          this.markDirty();
+        },
+        onLivePreview
+      );
     },
 
     markDirty() {

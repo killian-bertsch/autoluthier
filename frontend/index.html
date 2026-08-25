@@ -14,6 +14,14 @@
       <header class="app-header">
         <span class="brand">autosampler<span class="v">v2</span></span>
         <span class="project-path" x-text="project ? project.folder : ''"></span>
+        <template x-if="project && livePreviewStatus !== 'idle'">
+          <span
+            class="save-status live-preview-status"
+            :class="{ error: livePreviewStatus === 'error' }"
+            :title="livePreviewStatus === 'error' ? livePreviewError : ''"
+            x-text="livePreviewStatus === 'error' ? 'preview failed' : 'previewing…'"
+          ></span>
+        </template>
         <template x-if="project">
           <span
             class="save-status"
@@ -21,7 +29,7 @@
             x-text="saveStatusLabel()"
           ></span>
         </template>
-        <button class="btn btn-primary" x-show="project" @click="save()" :disabled="saveState === 'saving'">
+        <button class="btn btn-primary" x-show="project" @click="save()" :disabled="saveState === 'saving'" title="Ctrl/Cmd+S">
           Save
         </button>
       </header>
@@ -52,6 +60,10 @@
             </div>
             <div class="nav-item" :class="{ active: section === 'stages' }" @click="selectSection('stages')">
               Stage Chain
+            </div>
+            <div class="nav-item" :class="{ active: section === 'overrides' }" @click="selectSection('overrides')">
+              Overrides
+              <span class="nav-badge" x-show="config.overrides.length" x-text="config.overrides.length"></span>
             </div>
 
             <div class="nav-group-label">Views</div>

@@ -15,20 +15,22 @@ const expandedIds = new Set();
  * @param {Array<{id: string, enabled: boolean, params: Record<string, any>}>} stages
  * @param {Record<string, any>} stageSchemas Stage id -> that stage's params JSON Schema.
  * @param {(stages: Array<any>) => void} onChange Called with the full updated array on any edit.
+ * @param {(() => void) | undefined} onLivePreview Wired to every stage param's live drag/edit —
+ *   see `param-form.js`'s `onLivePreview`.
  */
-export function renderStageChain(container, stages, stageSchemas, onChange) {
+export function renderStageChain(container, stages, stageSchemas, onChange, onLivePreview) {
   container.innerHTML = "";
   const list = document.createElement("div");
   list.className = "stage-chain";
 
   stages.forEach((stage, index) => {
-    list.appendChild(renderStageRow(stage, index, stages, stageSchemas, onChange));
+    list.appendChild(renderStageRow(stage, index, stages, stageSchemas, onChange, onLivePreview));
   });
 
   container.appendChild(list);
 }
 
-function renderStageRow(stage, index, stages, stageSchemas, onChange) {
+function renderStageRow(stage, index, stages, stageSchemas, onChange, onLivePreview) {
   const row = document.createElement("div");
   row.className = `stage-row${expandedIds.has(rowKey(stage, index)) ? " expanded" : ""}`;
   row.draggable = true;
@@ -63,6 +65,7 @@ function renderStageRow(stage, index, stages, stageSchemas, onChange) {
     e.stopPropagation();
     const next = stages.map((s, i) => (i === index ? { ...s, enabled: !s.enabled } : s));
     onChange(next);
+    onLivePreview?.();
   });
   header.appendChild(toggle);
 
@@ -70,7 +73,7 @@ function renderStageRow(stage, index, stages, stageSchemas, onChange) {
     const key = rowKey(stage, index);
     if (expandedIds.has(key)) expandedIds.delete(key);
     else expandedIds.add(key);
-    renderStageChain(findChainContainer(row), stages, stageSchemas, onChange);
+    renderStageChain(findChainContainer(row), stages, stageSchemas, onChange, onLivePreview);
   };
   chevron.addEventListener("click", toggleExpand);
   name.addEventListener("click", toggleExpand);
@@ -78,14 +81,14 @@ function renderStageRow(stage, index, stages, stageSchemas, onChange) {
   row.appendChild(header);
 
   if (expandedIds.has(rowKey(stage, index))) {
-    row.appendChild(renderStageParams(stage, index, stages, stageSchemas, onChange));
+    row.appendChild(renderStageParams(stage, index, stages, stageSchemas, onChange, onLivePreview));
   }
 
-  attachDragHandlers(row, stages, onChange);
+  attachDragHandlers(row, stages, onChange, onLivePreview);
   return row;
 }
 
-function renderStageParams(stage, index, stages, stageSchemas, onChange) {
+function renderStageParams(stage, index, stages, stageSchemas, onChange, onLivePreview) {
   const schema = stageSchemas[stage.id];
   const hasFields = schema && Object.keys(schema.properties ?? {}).length > 0;
 
@@ -98,15 +101,22 @@ function renderStageParams(stage, index, stages, stageSchemas, onChange) {
 
   const paramsDiv = document.createElement("div");
   paramsDiv.className = "stage-params";
-  renderParamForm(paramsDiv, schema, {}, stage.params ?? {}, (paramName, paramValue) => {
-    const nextParams = { ...(stage.params ?? {}), [paramName]: paramValue };
-    const next = stages.map((s, i) => (i === index ? { ...s, params: nextParams } : s));
-    onChange(next);
-  });
+  renderParamForm(
+    paramsDiv,
+    schema,
+    {},
+    stage.params ?? {},
+    (paramName, paramValue) => {
+      const nextParams = { ...(stage.params ?? {}), [paramName]: paramValue };
+      const next = stages.map((s, i) => (i === index ? { ...s, params: nextParams } : s));
+      onChange(next);
+    },
+    onLivePreview
+  );
   return paramsDiv;
 }
 
-function attachDragHandlers(row, stages, onChange) {
+function attachDragHandlers(row, stages, onChange, onLivePreview) {
   row.addEventListener("dragstart", (e) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", row.dataset.index);
@@ -131,6 +141,7 @@ function attachDragHandlers(row, stages, onChange) {
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     onChange(next);
+    onLivePreview?.();
   });
 }
 

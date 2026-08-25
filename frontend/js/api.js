@@ -52,8 +52,8 @@ export const api = {
   getAnalysis: () => request("/api/analysis"),
 
   getSfzPreview: () => request("/api/sfz/preview"),
-  runPreview: (body) =>
-    request("/api/preview", { method: "POST", body: JSON.stringify(body ?? {}) }),
+  runPreview: (body, signal) =>
+    request("/api/preview", { method: "POST", body: JSON.stringify(body ?? {}), signal }),
 
   startJob: (body) => request("/api/jobs", { method: "POST", body: JSON.stringify(body ?? {}) }),
   getJob: (id) => request(`/api/jobs/${encodeURIComponent(id)}`),

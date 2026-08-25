@@ -63,6 +63,10 @@ function escapeHtml(s) {
 
 function buildView(container, samples, ctx) {
   container.innerHTML = "";
+  if (!samples.length) {
+    container.innerHTML = '<div class="empty-state"><p>No samples loaded — nothing to show here.</p></div>';
+    return;
+  }
   const state = {
     samples,
     sample: null, // the selected SampleSummary
@@ -157,7 +161,42 @@ function buildView(container, samples, ctx) {
   root.querySelector(".wv-reset-auto").addEventListener("click", () => applyOverride(root, state, ctx, "reset"));
   root.querySelector(".wv-disable-loop").addEventListener("click", () => applyOverride(root, state, ctx, "disable"));
 
+  // Keyboard shortcuts: Space toggles loop audition, [ / ] step to the previous/next sample —
+  // both ignored while focus is in a text field, select, or an editing numeric-field, so they
+  // never fight normal typing. Scoped to this view's own listener (removed in teardown) rather
+  // than a page-level one, since these keys only mean something while the waveform is open.
+  const onKeydown = (e) => {
+    const activeTag = (document.activeElement?.tagName || "").toLowerCase();
+    if (["input", "textarea", "select"].includes(activeTag)) return;
+    if (document.activeElement?.closest?.("numeric-field")) return;
+    if (e.key === " ") {
+      e.preventDefault();
+      togglePlay(root, state, ctx);
+    } else if (e.key === "[" || e.key === "]") {
+      e.preventDefault();
+      stepSample(root, state, ctx, e.key === "]" ? 1 : -1);
+    }
+  };
+  document.addEventListener("keydown", onKeydown);
+  const priorTeardown = container._teardown;
+  container._teardown = () => {
+    document.removeEventListener("keydown", onKeydown);
+    priorTeardown?.();
+  };
+
   if (initialId) loadSample(root, state, initialId, ctx);
+}
+
+function stepSample(root, state, ctx, delta) {
+  const picker = root.querySelector(".wv-sample-picker");
+  const options = Array.from(picker.options);
+  const index = options.findIndex((o) => o.value === picker.value);
+  if (index === -1) return;
+  const next = options[Math.min(options.length - 1, Math.max(0, index + delta))];
+  if (!next || next.value === picker.value) return;
+  picker.value = next.value;
+  ctx.onSelectSample(next.value);
+  loadSample(root, state, next.value, ctx);
 }
 
 function loadSample(root, state, sampleId, ctx) {
@@ -483,7 +522,9 @@ function runPreviewAndRetry(root, state, ctx) {
   const msg = root.querySelector(".wv-audition-message");
   msg.textContent = "Running preview…";
   ctx.api
-    .runPreview({})
+    // Send the in-memory config, not just what's on disk, so a still-unsaved stage/crossfade
+    // edit is what gets auditioned here too.
+    .runPreview({ config: ctx.config })
     .then(() => {
       state.buffers.preview = null;
       msg.textContent = "";

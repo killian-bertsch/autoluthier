@@ -248,3 +248,78 @@
   color: var(--text-dim);
   font-size: 11px;
 }
+
+/* --- Overrides --- */
+
+.override-warning {
+  color: var(--danger);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.overrides-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.override-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.override-label {
+  flex: 0 0 auto;
+  min-width: 110px;
+  font-size: 12px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.override-label.clickable {
+  cursor: pointer;
+}
+
+.override-label.clickable:hover {
+  color: var(--accent);
+}
+
+.override-missing {
+  font-size: 10px;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+.override-fields {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.override-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.override-field-label {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.override-tag {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-style: italic;
+}

@@ -57,6 +57,10 @@ export function renderMatrixView(container, ctx) {
 
 function buildView(container, rows, samples, ctx) {
   container.innerHTML = "";
+  if (!rows.length) {
+    container.innerHTML = '<div class="empty-state"><p>No samples loaded — nothing to show in the matrix.</p></div>';
+    return;
+  }
   const idByKey = new Map(samples.map((s) => [`${s.kind}-${s.note}-${s.velocity}`, s]));
 
   const state = { kind: "sustain", metric: "peak_db" };

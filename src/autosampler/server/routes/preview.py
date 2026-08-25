@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
+from autosampler.config.schema import ProjectConfig
 from autosampler.domain.models import SampleSet
 from autosampler.domain.notes import midi_to_note_name
 from autosampler.pipeline.graph import build_chain
@@ -26,11 +27,21 @@ def _state(request: Request) -> AppState:
 
 
 class RunPreviewRequest(BaseModel):
-    """Body of ``POST /api/preview``."""
+    """Body of ``POST /api/preview``.
+
+    ``config``, if supplied, is used to build the chain *instead of* the open project's saved
+    config — it is never written to disk or stored on the session. This is what lets the UI hear
+    an in-progress, unsaved edit (a dragged DSP parameter, a loop override) without a Save
+    round-trip first. Selection (which samples get previewed) still comes from the loaded audio,
+    so edits to ``recording``/``selection``/``output`` that would change how audio is loaded or
+    sliced are not reflected here — only a reload (Save, which reopens the project) picks those
+    up.
+    """
 
     note_count: int = DEFAULT_PREVIEW_NOTES
     velocity_count: int = DEFAULT_PREVIEW_VELOCITIES
     mode: PreviewMode = "exact"
+    config: ProjectConfig | None = None
 
 
 class PreviewSampleSummary(BaseModel):
@@ -81,7 +92,7 @@ def run_preview_route(body: RunPreviewRequest, request: Request) -> RunPreviewRe
     """
     state = _state(request)
     loaded = state.require_current()
-    chain = build_chain(loaded.config)
+    chain = build_chain(body.config if body.config is not None else loaded.config)
     selection = select_preview(
         loaded.audio, note_count=body.note_count, velocity_count=body.velocity_count
     )
