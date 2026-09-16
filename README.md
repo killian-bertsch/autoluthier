@@ -1,6 +1,6 @@
-# Autosampler
+# Autoluthier
 
-Autosampler turns a single long recording of an instrument into a fully-processed,
+Autoluthier turns a single long recording of an instrument into a fully-processed,
 velocity-layered SFZ instrument. You render a generated MIDI "autosampler" session into your
 instrument (hardware, plugin, whatever can receive MIDI and print audio) as one continuous
 WAV/FLAC file, and Autosampler slices that render back into individual per-(note, velocity)
