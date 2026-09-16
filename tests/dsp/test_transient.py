@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from autosampler.dsp.base import StageContext
-from autosampler.dsp.transient import TransientParams, TransientStage
+from autoluthier.dsp.base import StageContext
+from autoluthier.dsp.transient import TransientParams, TransientStage
 
 SR = 44_100
 

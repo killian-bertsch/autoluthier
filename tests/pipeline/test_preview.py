@@ -7,12 +7,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from autosampler.config.schema import StageConfig
-from autosampler.domain.models import InstrumentAudio
-from autosampler.pipeline.events import Event, StepProgress
-from autosampler.pipeline.executor import load_instrument_audio, run_instrument
-from autosampler.pipeline.graph import build_chain
-from autosampler.pipeline.preview import (
+from autoluthier.config.schema import StageConfig
+from autoluthier.domain.models import InstrumentAudio
+from autoluthier.pipeline.events import Event, StepProgress
+from autoluthier.pipeline.executor import load_instrument_audio, run_instrument
+from autoluthier.pipeline.graph import build_chain
+from autoluthier.pipeline.preview import (
     PreviewSelection,
     run_preview,
     select_preview,

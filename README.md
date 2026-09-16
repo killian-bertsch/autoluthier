@@ -1,12 +1,12 @@
 # Autoluthier
 
 Autoluthier turns a single long recording of an instrument into a fully-processed,
-velocity-layered SFZ instrument. You render a generated MIDI "autosampler" session into your
-instrument (hardware, plugin, whatever can receive MIDI and print audio) as one continuous
-WAV/FLAC file, and Autosampler slices that render back into individual per-(note, velocity)
-samples, runs them through a configurable DSP chain (trim, transient shaping, loudness
-normalization, EQ, stereo width, limiting, loop detection), and writes out a ready-to-load
-`.sfz` instrument plus its audio files.
+velocity-layered SFZ instrument. You render a generated multi-note, multi-velocity MIDI session
+into your instrument (hardware, plugin, whatever can receive MIDI and print audio) as one
+continuous WAV/FLAC file, and Autoluthier slices that render back into individual per-(note,
+velocity) samples, runs them through a configurable DSP chain (trim, transient shaping,
+loudness normalization, EQ, stereo width, limiting, loop detection), and writes out a
+ready-to-load `.sfz` instrument plus its audio files.
 
 It ships as both a scriptable CLI and a local single-page web app with waveform editing, a
 sample matrix, and live preview — both are thin clients over the same processing pipeline, so
@@ -33,7 +33,7 @@ anything you can do in the browser you can also do (or automate) from the comman
    want, holding each note for a fixed time and leaving a fixed silence after note-off. You
    render this into your instrument to get one long `sustain.wav` (and, optionally, a second
    pass recording note-off release tails into `release.wav`).
-2. **Slice** — because the recording is driven by exact, known timing, Autosampler locates each
+2. **Slice** — because the recording is driven by exact, known timing, Autoluthier locates each
    sample by pure arithmetic (`event_index * (hold_time + release_time) * sample_rate`) — no
    onset detection, no drift.
 3. **Process** — every sliced sample runs through an ordered, user-configurable chain of DSP
@@ -56,24 +56,24 @@ uv venv
 uv pip install -e ".[dev]"
 ```
 
-This installs the `autosampler` console script into the project's virtualenv (`uv run
-autosampler ...`, or activate the venv directly).
+This installs the `autoluthier` console script into the project's virtualenv (`uv run
+autoluthier ...`, or activate the venv directly).
 
 ## End-to-end workflow
 
 ```
-autosampler midi   →  record in your DAW/sampler  →  autosampler run
+autoluthier midi   →  record in your DAW/sampler  →  autoluthier run
      │                                                     ▲
      └─ generates .mid + a matching project.toml           │
                                                             │
-        (optional) autosampler prenorm / concat ───────────┘
-        (optional) autosampler validate / preview  (sanity-check before a full run)
+        (optional) autoluthier prenorm / concat ───────────┘
+        (optional) autoluthier validate / preview  (sanity-check before a full run)
 ```
 
 1. **Generate a recording session:**
 
    ```bash
-   autosampler midi -X 5 -N 3 -H 2.0 -R 1.0 -o piano --start-note 21 --end-note 108
+   autoluthier midi -X 5 -N 3 -H 2.0 -R 1.0 -o piano --start-note 21 --end-note 108
    ```
 
    Writes `piano.mid` (one note-on/off event per note/velocity pair, at a fixed 120 BPM — only
@@ -87,39 +87,39 @@ autosampler midi   →  record in your DAW/sampler  →  autosampler run
    note-off release tails and save it as `release.wav`/`.flac` in the same folder.
 
    If you recorded separate takes per velocity layer instead of one continuous MIDI-driven
-   pass, use `autosampler concat` to stitch and normalize them into the same `sustain`/`release`
-   layout, then `autosampler init` to attach a `project.toml` describing that recording.
+   pass, use `autoluthier concat` to stitch and normalize them into the same `sustain`/`release`
+   layout, then `autoluthier init` to attach a `project.toml` describing that recording.
 
 3. **(Optional) Normalize raw renders** across many instruments before slicing:
 
    ```bash
-   autosampler prenorm ./recordings --target-db -6.0
+   autoluthier prenorm ./recordings --target-db -6.0
    ```
 
 4. **(Optional) Sanity-check** the config and preview a few samples before committing to a full
    render:
 
    ```bash
-   autosampler validate ./piano
-   autosampler preview ./piano
+   autoluthier validate ./piano
+   autoluthier preview ./piano
    ```
 
 5. **Process it:**
 
    ```bash
-   autosampler run ./piano -o ./output
+   autoluthier run ./piano -o ./output
    ```
 
    Slices, processes, and exports `./output/piano/` containing the SFZ file(s) and audio
    samples. Use `--scan` to batch-process every instrument folder under a parent directory in
    one call.
 
-Alternatively, run `autosampler ui` at any point after step 2 and do the same work — plus
+Alternatively, run `autoluthier ui` at any point after step 2 and do the same work — plus
 interactive loop editing, live preview, and analysis views — in a browser.
 
 ## Project layout
 
-An instrument is a single folder. Autosampler expects, at minimum:
+An instrument is a single folder. Autoluthier expects, at minimum:
 
 ```
 piano/
@@ -128,7 +128,7 @@ piano/
 └── release.wav       # optional — a second pass of note-off release tails
 ```
 
-`autosampler run`/`--scan` writes its output to a separate directory (default `./output/`),
+`autoluthier run`/`--scan` writes its output to a separate directory (default `./output/`),
 one subfolder per instrument:
 
 ```
@@ -143,12 +143,12 @@ output/piano/
         └── piano_C4_v127_rel.flac
 ```
 
-`autosampler preview` writes its (smaller, auditioning-only) output to `<folder>/preview/` by
+`autoluthier preview` writes its (smaller, auditioning-only) output to `<folder>/preview/` by
 default.
 
 ## `project.toml` reference
 
-Generated for you by `autosampler midi`/`init`, and editable by hand or through the web UI's
+Generated for you by `autoluthier midi`/`init`, and editable by hand or through the web UI's
 config panels. Every field below is validated with `extra="forbid"` — an unrecognized or
 misspelled key is a hard error, not a silently-ignored default.
 
@@ -203,20 +203,20 @@ UI calls — nothing here makes a processing decision the UI can't also make.
 
 | Command | Purpose |
 |---|---|
-| `autosampler init <dir>` | Write a `project.toml` for an already-recorded instrument. |
-| `autosampler run <dir>` | Slice, process, and export one instrument (or, with `--scan`, every instrument under a parent folder). |
-| `autosampler validate <dir>` | Load and validate `project.toml` + build the DSP chain without touching audio. |
-| `autosampler preview <dir>` | Process an evenly-spread subset of notes/velocities for a quick listen. |
-| `autosampler midi` | Generate an autosampler MIDI session + a matching `project.toml`. |
-| `autosampler prenorm <dir>` | Peak-normalize raw `sustain`/`release` renders across many instrument folders, in place. |
-| `autosampler concat <dir> [out]` | Concatenate numbered per-layer raw takes into `sustain`/`release` files. |
-| `autosampler ui` | Launch the local web UI (FastAPI + browser frontend). |
+| `autoluthier init <dir>` | Write a `project.toml` for an already-recorded instrument. |
+| `autoluthier run <dir>` | Slice, process, and export one instrument (or, with `--scan`, every instrument under a parent folder). |
+| `autoluthier validate <dir>` | Load and validate `project.toml` + build the DSP chain without touching audio. |
+| `autoluthier preview <dir>` | Process an evenly-spread subset of notes/velocities for a quick listen. |
+| `autoluthier midi` | Generate an autoluthier MIDI session + a matching `project.toml`. |
+| `autoluthier prenorm <dir>` | Peak-normalize raw `sustain`/`release` renders across many instrument folders, in place. |
+| `autoluthier concat <dir> [out]` | Concatenate numbered per-layer raw takes into `sustain`/`release` files. |
+| `autoluthier ui` | Launch the local web UI (FastAPI + browser frontend). |
 
 <details>
-<summary><strong>autosampler init</strong> — scaffold a project.toml for existing audio</summary>
+<summary><strong>autoluthier init</strong> — scaffold a project.toml for existing audio</summary>
 
 ```
-autosampler init <folder> -X <velocity_layers> -N <semitone_interval> -H <hold_time> -R <release_time>
+autoluthier init <folder> -X <velocity_layers> -N <semitone_interval> -H <hold_time> -R <release_time>
     [--start-note 21] [--end-note 108] [--name INSTRUMENT] [--force]
 ```
 
@@ -227,10 +227,10 @@ you've already placed there, e.g. via `concat`). Refuses to overwrite an existin
 </details>
 
 <details>
-<summary><strong>autosampler run</strong> — slice, process, export</summary>
+<summary><strong>autoluthier run</strong> — slice, process, export</summary>
 
 ```
-autosampler run <target> [--output-dir/-o output] [--scan] [--instrument NAME] [--workers N]
+autoluthier run <target> [--output-dir/-o output] [--scan] [--instrument NAME] [--workers N]
 ```
 
 - Without `--scan`: `target` is one instrument folder.
@@ -245,10 +245,10 @@ rather than aborting the batch; the command exits non-zero only if every instrum
 </details>
 
 <details>
-<summary><strong>autosampler validate</strong> — fast sanity check</summary>
+<summary><strong>autoluthier validate</strong> — fast sanity check</summary>
 
 ```
-autosampler validate <folder>
+autoluthier validate <folder>
 ```
 
 Loads `project.toml`, validates it against the schema, and builds the DSP stage chain — the
@@ -259,10 +259,10 @@ success.
 </details>
 
 <details>
-<summary><strong>autosampler preview</strong> — audition the chain on a subset</summary>
+<summary><strong>autoluthier preview</strong> — audition the chain on a subset</summary>
 
 ```
-autosampler preview <folder> [--notes N] [--velocities N] [--mode exact|subset] [--out dir] [--workers N]
+autoluthier preview <folder> [--notes N] [--velocities N] [--mode exact|subset] [--out dir] [--workers N]
 ```
 
 Picks an evenly-spread grid of `(note, velocity)` samples, runs just those through the
@@ -274,26 +274,26 @@ everything, which is cheap but gives approximate normalize statistics.
 </details>
 
 <details>
-<summary><strong>autosampler midi</strong> — generate a recording session</summary>
+<summary><strong>autoluthier midi</strong> — generate a recording session</summary>
 
 ```
-autosampler midi -X <velocity_layers> -N <semitone_interval> -H <hold_time> -R <release_time> \
+autoluthier midi -X <velocity_layers> -N <semitone_interval> -H <hold_time> -R <release_time> \
     -o <output_stem> [--start-note 21] [--end-note 108] [--out-dir ./<output_stem>/]
 ```
 
 Writes `<output_stem>.mid` (systematic note-on/off events at 120 BPM, stepping notes by
 `semitone_interval` and velocities across `velocity_layers`) and a `project.toml` in
 `--out-dir` describing that exact layout. Prints a summary and reminds you of the next step:
-render the `.mid`, save the result as `sustain.wav` next to `project.toml`, then `autosampler
+render the `.mid`, save the result as `sustain.wav` next to `project.toml`, then `autoluthier
 run`.
 
 </details>
 
 <details>
-<summary><strong>autosampler prenorm</strong> — batch peak-normalize raw renders</summary>
+<summary><strong>autoluthier prenorm</strong> — batch peak-normalize raw renders</summary>
 
 ```
-autosampler prenorm <source_dir> [--target-db -6.0] [--dry-run]
+autoluthier prenorm <source_dir> [--target-db -6.0] [--dry-run]
 ```
 
 For every immediate subfolder of `source_dir`, finds its `sustain`/`release` render, measures
@@ -304,10 +304,10 @@ Silent files are skipped.
 </details>
 
 <details>
-<summary><strong>autosampler concat</strong> — stitch separately-recorded velocity layers</summary>
+<summary><strong>autoluthier concat</strong> — stitch separately-recorded velocity layers</summary>
 
 ```
-autosampler concat <input_dir> [output_dir] [--stereo NAME ...] [--target-db -6.0] [--layers 1,2,3]
+autoluthier concat <input_dir> [output_dir] [--stereo NAME ...] [--target-db -6.0] [--layers 1,2,3]
 ```
 
 Expects raw takes named `{n} <InstrumentName>.wav|flac` per sustain layer and `R
@@ -315,15 +315,15 @@ Expects raw takes named `{n} <InstrumentName>.wav|flac` per sustain layer and `R
 `--layers`, downmixes to mono unless the instrument name is passed to `--stereo`,
 peak-normalizes sustain and release independently to `--target-db`, and writes
 `<output_dir>/<InstrumentName>/sustain.flac` (+ `release.flac`) as 24-bit FLAC — ready for
-`autosampler init`.
+`autoluthier init`.
 
 </details>
 
 <details>
-<summary><strong>autosampler ui</strong> — launch the web app</summary>
+<summary><strong>autoluthier ui</strong> — launch the web app</summary>
 
 ```
-autosampler ui [--host 127.0.0.1] [--port 8000] [--no-open]
+autoluthier ui [--host 127.0.0.1] [--port 8000] [--no-open]
 ```
 
 Starts the FastAPI/uvicorn server and opens it in your default browser (`--no-open` to
@@ -400,7 +400,7 @@ explaining the measured dynamic range and what to set the sampler's velocity cur
 
 ## The web UI
 
-`autosampler ui` serves a local, single-session app (one browser tab, one instrument open at a
+`autoluthier ui` serves a local, single-session app (one browser tab, one instrument open at a
 time) with:
 
 - **Config panels** (General/Recording/Selection/Output/Crossfade) — every field auto-rendered
@@ -437,7 +437,7 @@ required.
 ## HTTP API
 
 The web UI is itself just a client of this API — anything below can be scripted directly.
-Interactive docs are always available at `/docs` while `autosampler ui` is running.
+Interactive docs are always available at `/docs` while `autoluthier ui` is running.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -469,7 +469,7 @@ CPU-bound); progress is available either by subscribing to `/events` or polling
 ## Source layout
 
 ```
-src/autosampler/
+src/autoluthier/
 ├── cli/          # Typer commands — one thin module per subcommand, plus app.py wiring them up
 ├── config/       # ProjectConfig (Pydantic v2 schema), TOML read/write, workspace index
 ├── domain/       # Sample/SampleSet/InstrumentAudio data model, note/velocity math, unit conversions

@@ -1,4 +1,4 @@
-"""Tests for the `autosampler ui` command.
+"""Tests for the `autoluthier ui` command.
 
 `uvicorn.run` blocks forever serving requests, so every test here monkeypatches it (and
 `webbrowser.open`, so a test run never actually pops a browser window) and just checks that
@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from autosampler.cli import ui as ui_module
-from autosampler.cli.app import app
+from autoluthier.cli import ui as ui_module
+from autoluthier.cli.app import app
 from tests.cli.conftest import runner
 
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from autosampler.dsp.base import StageContext
-from autosampler.dsp.dc import DcRemoveParams, DcRemoveStage
+from autoluthier.dsp.base import StageContext
+from autoluthier.dsp.dc import DcRemoveParams, DcRemoveStage
 
 SR = 44_100
 _TOLERANCE = 1e-6

@@ -102,7 +102,7 @@ wheels = [
 ]
 
 [[package]]
-name = "autosampler"
+name = "autoluthier"
 version = "2.0.0.dev0"
 source = { editable = "." }
 dependencies = [

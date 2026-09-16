@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from autosampler.dsp.base import Stage, StageContext
-from autosampler.dsp.dc import DcRemoveParams, DcRemoveStage
-from autosampler.dsp.trim import TrimParams, TrimStage
+from autoluthier.dsp.base import Stage, StageContext
+from autoluthier.dsp.dc import DcRemoveParams, DcRemoveStage
+from autoluthier.dsp.trim import TrimParams, TrimStage
 
 
 class TestStageContext:

@@ -1,12 +1,12 @@
-"""Tests for autosampler.analysis.matrix."""
+"""Tests for autoluthier.analysis.matrix."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-from autosampler.analysis.matrix import compute_matrix
-from autosampler.domain.models import InstrumentAudio, Sample, SampleSet
+from autoluthier.analysis.matrix import compute_matrix
+from autoluthier.domain.models import InstrumentAudio, Sample, SampleSet
 
 SAMPLE_RATE = 22050
 

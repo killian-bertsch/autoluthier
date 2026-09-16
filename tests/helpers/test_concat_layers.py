@@ -1,4 +1,4 @@
-"""Tests for autosampler.helpers.concat_layers."""
+"""Tests for autoluthier.helpers.concat_layers."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from autosampler.helpers.concat_layers import ConcatError, concat_instrument, concat_layers
+from autoluthier.helpers.concat_layers import ConcatError, concat_instrument, concat_layers
 
 SAMPLE_RATE = 8000
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from autosampler.export.sfz import (
+from autoluthier.export.sfz import (
     OpcodeLine,
     ReleaseRegion,
     SfzDocument,
@@ -16,7 +16,7 @@ from autosampler.export.sfz import (
     build_sustain_document,
     build_sustain_region,
 )
-from autosampler.export.zones import KeyZone, VelocityZone
+from autoluthier.export.zones import KeyZone, VelocityZone
 
 KEY = KeyZone(note=60, lokey=58, hikey=62)
 VEL = VelocityZone(velocity=100, lovel=80, hivel=120, xfin=None, xfout=None)

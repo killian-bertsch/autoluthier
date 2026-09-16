@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from autosampler.dsp._envelope import envelope_coeff, one_pole_follower, peak_hold_envelope
+from autoluthier.dsp._envelope import envelope_coeff, one_pole_follower, peak_hold_envelope
 
 
 def _naive_peak_hold(amp: np.ndarray, coeff: float) -> np.ndarray:

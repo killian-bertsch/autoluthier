@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
-from autosampler.io.slicer import slice_notes_velocities
+from autoluthier.io.slicer import slice_notes_velocities
 
 SR = 22_050
 

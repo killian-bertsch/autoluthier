@@ -1,11 +1,11 @@
-"""Tests for autosampler.config.toml_io."""
+"""Tests for autoluthier.config.toml_io."""
 
 from pathlib import Path
 
 import pytest
 
-from autosampler.config.schema import ProjectConfig, RecordingConfig, SelectionConfig
-from autosampler.config.toml_io import (
+from autoluthier.config.schema import ProjectConfig, RecordingConfig, SelectionConfig
+from autoluthier.config.toml_io import (
     ProjectConfigError,
     load_project,
     read_toml,

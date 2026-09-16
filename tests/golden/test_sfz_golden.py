@@ -39,9 +39,9 @@ from pathlib import Path
 
 import pytest
 
-from autosampler.config.toml_io import load_project
-from autosampler.export.writer import ExportPlan, plan_export
-from autosampler.pipeline.executor import run_instrument
+from autoluthier.config.toml_io import load_project
+from autoluthier.export.writer import ExportPlan, plan_export
+from autoluthier.pipeline.executor import run_instrument
 from tests.golden.keybass_render import INSTRUMENT_NAME, write_golden_instrument
 
 GOLDEN_DIR = Path(__file__).parent

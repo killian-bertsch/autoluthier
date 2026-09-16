@@ -5,13 +5,13 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from autosampler.dsp.dc import DcRemoveStage
-from autosampler.dsp.eq import EqStage
-from autosampler.dsp.limiter import LimiterStage
-from autosampler.dsp.registry import all_registrations, build_stage, get_registration
-from autosampler.dsp.stereo import StereoStage
-from autosampler.dsp.transient import TransientStage
-from autosampler.dsp.trim import TrimStage
+from autoluthier.dsp.dc import DcRemoveStage
+from autoluthier.dsp.eq import EqStage
+from autoluthier.dsp.limiter import LimiterStage
+from autoluthier.dsp.registry import all_registrations, build_stage, get_registration
+from autoluthier.dsp.stereo import StereoStage
+from autoluthier.dsp.transient import TransientStage
+from autoluthier.dsp.trim import TrimStage
 
 
 class TestGetRegistration:

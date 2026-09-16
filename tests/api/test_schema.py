@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from autosampler.config.schema import default_stage_chain
+from autoluthier.config.schema import default_stage_chain
 
 
 def test_schema_matches_project_config(client: TestClient) -> None:

@@ -10,10 +10,10 @@ from typing import Any
 import numpy as np
 import pytest
 
-from autosampler.config.schema import StageConfig
-from autosampler.domain.models import InstrumentAudio
-from autosampler.pipeline import executor as executor_module
-from autosampler.pipeline.events import (
+from autoluthier.config.schema import StageConfig
+from autoluthier.domain.models import InstrumentAudio
+from autoluthier.pipeline import executor as executor_module
+from autoluthier.pipeline.events import (
     Event,
     ProgressReporter,
     RunCompleted,
@@ -23,14 +23,14 @@ from autosampler.pipeline.events import (
     StepProgress,
     StepStarted,
 )
-from autosampler.pipeline.executor import (
+from autoluthier.pipeline.executor import (
     PipelineError,
     load_instrument_audio,
     resolve_workers,
     run_chain,
     run_instrument,
 )
-from autosampler.pipeline.graph import build_chain, partition_chain
+from autoluthier.pipeline.graph import build_chain, partition_chain
 from tests.pipeline.conftest import (
     HOLD_TIME,
     RELEASE_TIME,

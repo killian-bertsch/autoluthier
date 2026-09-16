@@ -7,8 +7,8 @@ import pytest
 from pydantic import ValidationError
 from scipy.signal import resample_poly
 
-from autosampler.dsp.base import StageContext
-from autosampler.dsp.limiter import LimiterParams, LimiterStage
+from autoluthier.dsp.base import StageContext
+from autoluthier.dsp.limiter import LimiterParams, LimiterStage
 
 SR = 44_100
 

@@ -1,4 +1,4 @@
-"""Tests for autosampler.helpers.midi_session."""
+"""Tests for autoluthier.helpers.midi_session."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from autosampler.config.toml_io import load_project
-from autosampler.domain.notes import recorded_notes, velocity_list
-from autosampler.helpers.midi_session import describe_session, generate_midi_session
+from autoluthier.config.toml_io import load_project
+from autoluthier.domain.notes import recorded_notes, velocity_list
+from autoluthier.helpers.midi_session import describe_session, generate_midi_session
 
 
 def test_writes_midi_and_project_toml(tmp_path: Path) -> None:

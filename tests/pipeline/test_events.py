@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from autosampler.pipeline.events import (
+from autoluthier.pipeline.events import (
     Event,
     ProgressReporter,
     RunCompleted,

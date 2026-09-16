@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from autosampler.domain.notes import (
+from autoluthier.domain.notes import (
     midi_to_note_name,
     note_name_to_midi,
     recorded_notes,

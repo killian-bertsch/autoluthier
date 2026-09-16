@@ -1,11 +1,11 @@
-"""Tests for the `autosampler run` command."""
+"""Tests for the `autoluthier run` command."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from autosampler.cli.app import app
-from autosampler.config.toml_io import save_project
+from autoluthier.cli.app import app
+from autoluthier.config.toml_io import save_project
 from tests.cli.conftest import runner
 from tests.pipeline.conftest import Instrument, write_instrument
 

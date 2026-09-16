@@ -1,9 +1,9 @@
-"""Tests for autosampler.config.schema."""
+"""Tests for autoluthier.config.schema."""
 
 import pytest
 from pydantic import ValidationError
 
-from autosampler.config.schema import (
+from autoluthier.config.schema import (
     CrossfadeConfig,
     ProjectConfig,
     RecordingConfig,

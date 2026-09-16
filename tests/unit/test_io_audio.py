@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from autosampler.config.schema import OutputConfig
-from autosampler.io.reader import find_audio_file, read_audio
-from autosampler.io.writer import resample, resolve_subtype, write_audio
+from autoluthier.config.schema import OutputConfig
+from autoluthier.io.reader import find_audio_file, read_audio
+from autoluthier.io.writer import resample, resolve_subtype, write_audio
 
 SR = 44_100
 

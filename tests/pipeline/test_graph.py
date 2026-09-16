@@ -5,10 +5,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from autosampler.config.schema import StageConfig
-from autosampler.domain.models import Sample
-from autosampler.dsp.loop import LoopParams
-from autosampler.pipeline.graph import (
+from autoluthier.config.schema import StageConfig
+from autoluthier.domain.models import Sample
+from autoluthier.dsp.loop import LoopParams
+from autoluthier.pipeline.graph import (
     BarrierSegment,
     BufferStep,
     ChainConfigError,

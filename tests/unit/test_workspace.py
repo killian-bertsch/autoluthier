@@ -1,10 +1,10 @@
-"""Tests for autosampler.config.workspace."""
+"""Tests for autoluthier.config.workspace."""
 
 from pathlib import Path
 
 import pytest
 
-from autosampler.config.workspace import (
+from autoluthier.config.workspace import (
     WorkspaceIndex,
     WorkspaceIndexError,
     discover_projects,

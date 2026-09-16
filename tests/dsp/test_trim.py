@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from autosampler.dsp.base import StageContext
-from autosampler.dsp.trim import TrimParams, TrimStage
+from autoluthier.dsp.base import StageContext
+from autoluthier.dsp.trim import TrimParams, TrimStage
 
 SR = 44_100
 

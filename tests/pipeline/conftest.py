@@ -21,8 +21,8 @@ import pytest
 import soundfile as sf
 from numpy.typing import NDArray
 
-from autosampler.config.schema import ProjectConfig
-from autosampler.domain.notes import recorded_notes, velocity_list
+from autoluthier.config.schema import ProjectConfig
+from autoluthier.domain.notes import recorded_notes, velocity_list
 
 SAMPLE_RATE = 8000
 HOLD_TIME = 1.0
@@ -61,7 +61,7 @@ def build_render(
     dc: float = DC_OFFSET,
     body_scale: float = 1.0,
 ) -> NDArray[np.float32]:
-    """Build a full autosampler render: one event per ``(note, velocity)``, note-outer."""
+    """Build a full autoluthier render: one event per ``(note, velocity)``, note-outer."""
     hold_frames = round(hold_time * sample_rate)
     release_frames = round(release_time * sample_rate)
     n_events = len(notes) * len(velocities)

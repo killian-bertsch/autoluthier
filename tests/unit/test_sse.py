@@ -1,4 +1,4 @@
-"""Tests for autosampler.server.sse.EventBroadcaster.
+"""Tests for autoluthier.server.sse.EventBroadcaster.
 
 Exercised directly against asyncio rather than through an HTTP round-trip: a job thread calls
 `publish` from outside the event loop exactly like these tests do, so this is what actually
@@ -10,8 +10,8 @@ from __future__ import annotations
 import asyncio
 import threading
 
-from autosampler.pipeline.events import RunCompleted, RunStarted
-from autosampler.server.sse import EventBroadcaster
+from autoluthier.pipeline.events import RunCompleted, RunStarted
+from autoluthier.server.sse import EventBroadcaster
 
 
 def test_publish_before_bind_loop_is_a_no_op() -> None:

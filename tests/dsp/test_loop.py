@@ -7,10 +7,10 @@ import pytest
 from numpy.typing import NDArray
 from pydantic import ValidationError
 
-from autosampler.config.schema import CrossfadeConfig
-from autosampler.domain.models import Sample, SampleSet
-from autosampler.domain.units import ms_to_frames
-from autosampler.dsp.loop import (
+from autoluthier.config.schema import CrossfadeConfig
+from autoluthier.domain.models import Sample, SampleSet
+from autoluthier.domain.units import ms_to_frames
+from autoluthier.dsp.loop import (
     LoopParams,
     LoopPoints,
     apply_loop,

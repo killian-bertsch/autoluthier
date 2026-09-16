@@ -7,8 +7,8 @@ import pytest
 from pydantic import ValidationError
 from scipy.signal import sosfreqz
 
-from autosampler.dsp.base import StageContext
-from autosampler.dsp.eq import EqParams, EqStage, _biquad_sos
+from autoluthier.dsp.base import StageContext
+from autoluthier.dsp.eq import EqParams, EqStage, _biquad_sos
 
 SR = 48_000
 

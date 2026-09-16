@@ -8,10 +8,10 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from autosampler.config.schema import ProjectConfig, SampleOverride, StageConfig
-from autosampler.config.toml_io import load_project, save_project
-from autosampler.pipeline.executor import load_instrument_audio, run_chain, run_instrument
-from autosampler.pipeline.graph import build_chain
+from autoluthier.config.schema import ProjectConfig, SampleOverride, StageConfig
+from autoluthier.config.toml_io import load_project, save_project
+from autoluthier.pipeline.executor import load_instrument_audio, run_chain, run_instrument
+from autoluthier.pipeline.graph import build_chain
 from tests.pipeline.conftest import Instrument, make_config, write_instrument
 
 LOOP_ONLY = [StageConfig(id="loop")]

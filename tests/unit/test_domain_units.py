@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from autosampler.domain.units import frames_to_seconds, ms_to_frames, seconds_to_frames
+from autoluthier.domain.units import frames_to_seconds, ms_to_frames, seconds_to_frames
 
 
 class TestSecondsToFrames:

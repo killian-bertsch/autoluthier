@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from autosampler.config.toml_io import save_project
-from autosampler.server.app import create_app
+from autoluthier.config.toml_io import save_project
+from autoluthier.server.app import create_app
 from tests.pipeline.conftest import Instrument, write_instrument
 
 

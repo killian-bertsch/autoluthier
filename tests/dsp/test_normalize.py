@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from autosampler.domain.models import Sample, SampleSet
-from autosampler.dsp.normalize import (
+from autoluthier.domain.models import Sample, SampleSet
+from autoluthier.dsp.normalize import (
     NormalizeParams,
     _meter_for,
     apply_normalize,

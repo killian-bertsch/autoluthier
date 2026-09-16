@@ -18,9 +18,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from autosampler.pipeline.events import RunStarted
-from autosampler.server.routes.events import _event_stream
-from autosampler.server.sse import EventBroadcaster
+from autoluthier.pipeline.events import RunStarted
+from autoluthier.server.routes.events import _event_stream
+from autoluthier.server.sse import EventBroadcaster
 
 
 @dataclass

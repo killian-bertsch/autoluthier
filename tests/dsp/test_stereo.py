@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from autosampler.dsp.base import StageContext
-from autosampler.dsp.stereo import StereoParams, StereoStage
+from autoluthier.dsp.base import StageContext
+from autoluthier.dsp.stereo import StereoParams, StereoStage
 
 SR = 44_100
 

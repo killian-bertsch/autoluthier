@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-from autosampler.analysis.metrics import (
+from autoluthier.analysis.metrics import (
     RT_DECAY_DEFAULT,
     RT_DECAY_MAX,
     RT_DECAY_MIN,

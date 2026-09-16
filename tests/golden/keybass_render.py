@@ -72,7 +72,7 @@ def _tone(n_frames: int, freq: float, amplitude: float, decay: float) -> NDArray
 
 
 def build_render(body_scale: float) -> NDArray[np.float32]:
-    """Build one full autosampler render, note-outer and velocity-inner.
+    """Build one full autoluthier render, note-outer and velocity-inner.
 
     Args:
         body_scale: Overall level of the held portion; the release pass is quieter than the

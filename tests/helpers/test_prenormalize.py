@@ -1,4 +1,4 @@
-"""Tests for autosampler.helpers.prenormalize."""
+"""Tests for autoluthier.helpers.prenormalize."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from autosampler.helpers.prenormalize import (
+from autoluthier.helpers.prenormalize import (
     find_source_files,
     normalize_file,
     prenormalize_sources,

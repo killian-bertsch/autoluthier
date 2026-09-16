@@ -1,7 +1,7 @@
 [project]
-name = "autosampler"
+name = "autoluthier"
 version = "2.0.0.dev0"
-description = "Batch multisample instrument builder: slice long autosampler renders into per-(note, velocity) samples, process them, and export SFZ instruments."
+description = "Batch multisample instrument builder: slice long autoluthier renders into per-(note, velocity) samples, process them, and export SFZ instruments."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -33,14 +33,14 @@ dev = [
 ]
 
 [project.scripts]
-autosampler = "autosampler.cli.app:main"
+autoluthier = "autoluthier.cli.app:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/autosampler"]
+packages = ["src/autoluthier"]
 
 # ---------------------------------------------------------------- ruff
 
@@ -112,5 +112,5 @@ markers = [
 filterwarnings = ["error"]
 
 [tool.coverage.run]
-source = ["src/autosampler"]
+source = ["src/autoluthier"]
 branch = true

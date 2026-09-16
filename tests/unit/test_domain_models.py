@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from autosampler.domain.models import InstrumentAudio, Sample, SampleSet
+from autoluthier.domain.models import InstrumentAudio, Sample, SampleSet
 
 
 def _sample(note: int, velocity: int, n_frames: int = 4, n_channels: int = 1) -> Sample:

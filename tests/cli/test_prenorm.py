@@ -1,4 +1,4 @@
-"""Tests for the `autosampler prenorm` command."""
+"""Tests for the `autoluthier prenorm` command."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-from autosampler.cli.app import app
+from autoluthier.cli.app import app
 from tests.cli.conftest import runner
 
 SAMPLE_RATE = 8000

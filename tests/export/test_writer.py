@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 import soundfile as sf
 
-from autosampler.config.schema import ProjectConfig
-from autosampler.domain.models import InstrumentAudio, SampleSet
-from autosampler.export.reports import VELOCITY_RANGE_FILENAME
-from autosampler.export.writer import (
+from autoluthier.config.schema import ProjectConfig
+from autoluthier.domain.models import InstrumentAudio, SampleSet
+from autoluthier.export.reports import VELOCITY_RANGE_FILENAME
+from autoluthier.export.writer import (
     ExportError,
     ExportPlan,
     ExportResult,
@@ -18,7 +18,7 @@ from autosampler.export.writer import (
     plan_export,
     selected_velocities,
 )
-from autosampler.pipeline.executor import RunResult, run_instrument
+from autoluthier.pipeline.executor import RunResult, run_instrument
 from tests.pipeline.conftest import Instrument, write_instrument
 
 

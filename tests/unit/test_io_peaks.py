@@ -1,11 +1,11 @@
-"""Tests for autosampler.io.peaks."""
+"""Tests for autoluthier.io.peaks."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-from autosampler.io.peaks import compute_peak_level, compute_peaks
+from autoluthier.io.peaks import compute_peak_level, compute_peaks
 
 
 def test_bin_count_clamped_to_frame_count() -> None:

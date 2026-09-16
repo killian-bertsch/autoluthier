@@ -6,8 +6,8 @@ from itertools import pairwise
 
 import pytest
 
-from autosampler.config.schema import parse_velocity_map
-from autosampler.export.zones import (
+from autoluthier.config.schema import parse_velocity_map
+from autoluthier.export.zones import (
     MAX_VELOCITY,
     MIN_VELOCITY,
     compute_key_zones,
